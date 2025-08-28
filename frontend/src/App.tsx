@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react'
+import Editor from '@monaco-editor/react'
 
 type SidebarTab = 'chat' | 'files'
 
@@ -8,6 +9,7 @@ interface FileItem {
   path: string
   type: 'file' | 'directory'
   size?: number
+  file?: File // 原始File对象，用于读取内容
 }
 
 interface DirectoryStructure {
@@ -38,6 +40,19 @@ interface ChatMessage {
   content: string
   timestamp: number
   roleId?: string
+}
+
+interface EditorTab {
+  id: string
+  name: string
+  path: string
+  content: string
+  language: string
+  isModified: boolean
+}
+
+interface FileContent {
+  [key: string]: string
 }
 
 const requiredDirectories = [
@@ -107,6 +122,27 @@ function App() {
   useEffect(() => {
     scrollToBottom()
   }, [chatMessages])
+  
+  // 编辑器相关状态
+  const [openTabs, setOpenTabs] = useState<EditorTab[]>([])
+  const [activeTabId, setActiveTabId] = useState<string | null>(null)
+  const [fileContents, setFileContents] = useState<FileContent>({})
+  
+  // 添加键盘快捷键支持
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S 保存文件
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        if (activeTabId) {
+          saveFile(activeTabId)
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeTabId, openTabs]) // 添加 openTabs 依赖，因为 saveFile 函数会用到
 
   const validateProjectStructure = (files: FileList): ProjectStructure => {
     const directories = Array.from(files)
@@ -138,7 +174,8 @@ function App() {
           name: fileName,
           path: file.webkitRelativePath,
           type: 'file',
-          size: file.size
+          size: file.size,
+          file: file // 保存原始File对象
         })
       }
     })
@@ -182,21 +219,11 @@ function App() {
   const handleFileClick = (file: FileItem) => {
     setSelectedFile(file)
     
+    // 打开文件到编辑器
+    openFileInEditor(file)
+    
     // 根据文件路径自动切换AI角色
-    const filePath = file.path
-    const autoRole = getAutoRoleForFile(filePath)
-    if (autoRole && autoRole.id !== currentRole.id) {
-      setCurrentRole(autoRole)
-      // 添加系统消息提示角色切换
-      const systemMessage: ChatMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `已自动切换到${autoRole.name}模式。我是${autoRole.description}，可以帮您处理"${file.name}"文件的相关内容。`,
-        timestamp: Date.now(),
-        roleId: autoRole.id
-      }
-      setChatMessages(prev => [...prev, systemMessage])
-    }
+    switchAIRoleForFile(file.path, file.name)
     
     console.log('选中文件:', file)
   }
@@ -210,6 +237,25 @@ function App() {
       }
     }
     return aiRoles[3] // 默认返回总监
+  }
+
+  // 提取AI角色切换逻辑到独立函数
+  const switchAIRoleForFile = (filePath: string, fileName: string) => {
+    const autoRole = getAutoRoleForFile(filePath)
+    if (autoRole && autoRole.id !== currentRole.id) {
+      setCurrentRole(autoRole)
+      // 添加系统消息提示角色切换
+      const systemMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `已自动切换到${autoRole.name}模式。我是${autoRole.description}，可以帮您处理"${fileName}"文件的相关内容。`,
+        timestamp: Date.now(),
+        roleId: autoRole.id
+      }
+      setChatMessages(prev => [...prev, systemMessage])
+      
+      console.log(`AI角色自动切换: ${currentRole.name} → ${autoRole.name} (文件: ${fileName})`)
+    }
   }
 
   const handleRoleSwitch = (role: AIRole) => {
@@ -302,6 +348,148 @@ function App() {
       case 'json': return '⚙️'
       default: return '📄'
     }
+  }
+  
+  const getFileLanguage = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toLowerCase()
+    switch (ext) {
+      case 'md': return 'markdown'
+      case 'json': return 'json'
+      case 'js': return 'javascript'
+      case 'ts': return 'typescript'
+      case 'jsx': return 'javascript'
+      case 'tsx': return 'typescript'
+      case 'css': return 'css'
+      case 'html': return 'html'
+      case 'txt': return 'text' // 修改为 'text' 而不是 'plaintext'
+      default: return 'text'
+    }
+  }
+  
+  const openFileInEditor = async (file: FileItem) => {
+    // 检查是否已经打开
+    const existingTab = openTabs.find(tab => tab.path === file.path)
+    if (existingTab) {
+      setActiveTabId(existingTab.id)
+      return
+    }
+    
+    let content = ''
+    
+    try {
+      // 检查缓存
+      if (fileContents[file.path]) {
+        content = fileContents[file.path]
+      } else if (file.file) {
+        // 读取真实文件内容
+        console.log('读取文件:', file.path, file.file)
+        content = await readFileContent(file.file)
+        
+        // 缓存文件内容
+        setFileContents(prev => ({
+          ...prev,
+          [file.path]: content
+        }))
+      } else {
+        // 没有File对象时的错误处理
+        console.error('没有找到文件对象:', file)
+        content = `# 文件读取失败
+
+无法读取文件 "${file.name}" 的内容。
+
+可能的原因：
+1. 文件已被移动或删除
+2. 没有读取权限
+3. 浏览器安全限制
+
+请重新选择项目目录。`
+      }
+    } catch (error) {
+      console.error('读取文件失败:', error)
+      content = `# 文件读取错误
+
+读取文件 "${file.name}" 时出现错误：
+
+${error instanceof Error ? error.message : '未知错误'}
+
+请检查文件是否存在且可读取。`
+    }
+    
+    const newTab: EditorTab = {
+      id: Date.now().toString(),
+      name: file.name,
+      path: file.path,
+      content,
+      language: getFileLanguage(file.name),
+      isModified: false
+    }
+    
+    setOpenTabs(prev => [...prev, newTab])
+    setActiveTabId(newTab.id)
+  }
+  
+  // 读取文件内容的辅助函数
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      
+      reader.onload = (event) => {
+        const content = event.target?.result as string
+        resolve(content || '')
+      }
+      
+      reader.onerror = (error) => {
+        reject(new Error('文件读取失败'))
+      }
+      
+      // 以UTF-8编码读取文本文件
+      reader.readAsText(file, 'utf-8')
+    })
+  }
+  
+  
+  const closeTab = (tabId: string) => {
+    setOpenTabs(prev => {
+      const newTabs = prev.filter(tab => tab.id !== tabId)
+      
+      // 如果关闭的是当前活跃标签，切换到其他标签
+      if (activeTabId === tabId && newTabs.length > 0) {
+        setActiveTabId(newTabs[newTabs.length - 1].id)
+      } else if (newTabs.length === 0) {
+        setActiveTabId(null)
+      }
+      
+      return newTabs
+    })
+  }
+  
+  const handleEditorChange = (value: string | undefined, tabId: string) => {
+    if (value === undefined) return
+    
+    setOpenTabs(prev => prev.map(tab => 
+      tab.id === tabId 
+        ? { ...tab, content: value, isModified: true }
+        : tab
+    ))
+  }
+  
+  const saveFile = (tabId: string) => {
+    const tab = openTabs.find(t => t.id === tabId)
+    if (!tab) return
+    
+    // 这里模拟保存文件
+    setFileContents(prev => ({
+      ...prev,
+      [tab.path]: tab.content
+    }))
+    
+    setOpenTabs(prev => prev.map(t => 
+      t.id === tabId 
+        ? { ...t, isModified: false }
+        : t
+    ))
+    
+    console.log(`文件 ${tab.name} 已保存`)
   }
   
   return (
@@ -641,42 +829,107 @@ function App() {
       {/* Right Content Area */}
       <div className="flex-1 flex flex-col">
         {/* File Tab Header */}
-        <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 gap-2">
-          <div className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-md text-sm">
-            <span>故事世界.md</span>
-            <button className="text-muted-foreground hover:text-foreground text-xs">×</button>
-          </div>
+        <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 gap-2 overflow-x-auto">
+          {openTabs.length === 0 ? (
+            <div className="text-sm text-muted-foreground">选择文件开始编辑</div>
+          ) : (
+            openTabs.map(tab => (
+              <div
+                key={tab.id}
+                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors cursor-pointer flex-shrink-0 ${
+                  activeTabId === tab.id
+                    ? 'bg-background border border-border'
+                    : 'bg-transparent hover:bg-muted/50'
+                }`}
+                onClick={() => {
+                  setActiveTabId(tab.id)
+                  // 标签切换时也触发AI角色自动切换
+                  switchAIRoleForFile(tab.path, tab.name)
+                }}
+              >
+                <span className="text-xs">{getFileIcon(tab.name)}</span>
+                <span className={tab.isModified ? 'text-orange-600' : ''}>{tab.name}</span>
+                {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
+                <button 
+                  className="text-muted-foreground hover:text-foreground text-xs ml-1"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    closeTab(tab.id)
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
         </div>
         
         {/* Editor Area */}
         <div className="flex-1 bg-background">
-          <div className="h-full p-4">
-            {/* Monaco Editor Placeholder */}
-            <div className="h-full bg-background border border-border rounded-lg overflow-hidden">
-              <div className="p-4 text-sm font-mono leading-relaxed">
-                <div className="text-muted-foreground mb-4"># 武侠小说 - 故事世界设定</div>
-                <div className="space-y-2">
-                  <div>## 时空框架</div>
-                  <div className="ml-4">- **时间设定**: 明朝中后期（1550-1600年）</div>
-                  <div className="ml-4">- **空间设定**: 江南水乡，以苏杭为中心</div>
-                  <div className="ml-4">- **时代特征**: 商业繁荣，文化鼎盛，但政治腐败</div>
-                  <div></div>
-                  <div>## 世界规则</div>
-                  <div className="ml-4">- **武学体系**: 内功心法配合外功招式</div>
-                  <div className="ml-4">- **门派势力**: 七大门派割据，朝廷暗中制衡</div>
-                  <div className="ml-4">- **江湖规矩**: 以武会友，恩怨分明</div>
-                </div>
+          {activeTabId ? (
+            (() => {
+              const activeTab = openTabs.find(tab => tab.id === activeTabId)
+              if (!activeTab) return null
+              
+              return (
+                <Editor
+                  height="100%"
+                  language={activeTab.language}
+                  value={activeTab.content}
+                  onChange={(value) => handleEditorChange(value, activeTab.id)}
+                  theme="vs-dark"
+                  options={{
+                    fontSize: 20,
+                    fontFamily: 'Monaco, "Fira Code", Consolas, monospace',
+                    lineHeight: 30,
+                    wordWrap: 'on',
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    tabSize: 2,
+                    insertSpaces: true,
+                    padding: { top: 16, bottom: 16 }
+                  }}
+                />
+              )
+            })()
+          ) : (
+            <div className="h-full flex items-center justify-center text-center">
+              <div>
+                <div className="text-6xl mb-4">📝</div>
+                <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
+                <p className="text-sm text-muted-foreground">
+                  从左侧选择文件开始编辑
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
         
         {/* Bottom Status Bar */}
         <div className="h-8 bg-muted/30 border-t border-border flex items-center justify-between px-4 text-xs text-muted-foreground">
-          <div>已保存</div>
+          <div>
+            {activeTabId ? (
+              (() => {
+                const activeTab = openTabs.find(tab => tab.id === activeTabId)
+                return activeTab ? (activeTab.isModified ? '未保存' : '已保存') : ''
+              })()
+            ) : (
+              '就绪'
+            )}
+          </div>
           <div className="flex gap-4">
-            <span>行 8，列 12</span>
-            <button className="text-primary hover:underline">手动保存</button>
+            {activeTabId && (
+              <>
+                <span>{openTabs.find(tab => tab.id === activeTabId)?.language || ''}</span>
+                <button 
+                  className="text-primary hover:underline"
+                  onClick={() => activeTabId && saveFile(activeTabId)}
+                >
+                  保存 (Ctrl+S)
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
