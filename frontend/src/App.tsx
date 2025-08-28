@@ -3,24 +3,39 @@ import { useState } from 'react'
 
 type SidebarTab = 'chat' | 'files'
 
+interface FileItem {
+  name: string
+  path: string
+  type: 'file' | 'directory'
+  size?: number
+}
+
+interface DirectoryStructure {
+  [key: string]: FileItem[]
+}
+
 interface ProjectStructure {
   hasValidStructure: boolean
   directories: string[]
   missingDirectories: string[]
   projectName: string
+  fileStructure?: DirectoryStructure
+  allFiles?: FileList
 }
+
+const requiredDirectories = [
+  '0-小说设定',
+  '1-故事大纲', 
+  '2-故事概要',
+  '3-小说内容'
+]
 
 function App() {
   const [activeTab, setActiveTab] = useState<SidebarTab>('chat')
   const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-
-  const requiredDirectories = [
-    '0-小说设定',
-    '1-故事大纲', 
-    '2-故事概要',
-    '3-小说内容'
-  ]
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set())
 
   const validateProjectStructure = (files: FileList): ProjectStructure => {
     const directories = Array.from(files)
@@ -35,11 +50,40 @@ function App() {
       ? files[0].webkitRelativePath.split('/')[0] 
       : '未知项目'
 
+    // 构建文件结构 - 过滤隐藏文件，支持所有目录
+    const fileStructure: DirectoryStructure = {}
+    Array.from(files).forEach(file => {
+      const pathParts = file.webkitRelativePath.split('/')
+      const directory = pathParts[1]
+      const fileName = pathParts[pathParts.length - 1]
+      
+      // 过滤隐藏文件和文件夹（以.开头）
+      if (directory && fileName && !directory.startsWith('.') && !fileName.startsWith('.')) {
+        if (!fileStructure[directory]) {
+          fileStructure[directory] = []
+        }
+        
+        fileStructure[directory].push({
+          name: fileName,
+          path: file.webkitRelativePath,
+          type: 'file',
+          size: file.size
+        })
+      }
+    })
+
+    // 对每个目录的文件进行排序
+    Object.keys(fileStructure).forEach(dirName => {
+      fileStructure[dirName].sort((a, b) => a.name.localeCompare(b.name, 'zh', { numeric: true }))
+    })
+
     return {
       hasValidStructure: missingDirectories.length === 0,
       directories,
       missingDirectories,
-      projectName
+      projectName,
+      fileStructure,
+      allFiles: files
     }
   }
 
@@ -61,6 +105,33 @@ function App() {
       console.error('目录选择失败:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleFileClick = (file: FileItem) => {
+    setSelectedFile(file)
+    // TODO: 在这里触发右侧编辑器打开文件
+    // TODO: 根据文件类型自动切换AI角色
+    console.log('选中文件:', file)
+  }
+
+  const toggleDirectory = (dirName: string) => {
+    const newExpanded = new Set(expandedDirs)
+    if (newExpanded.has(dirName)) {
+      newExpanded.delete(dirName)
+    } else {
+      newExpanded.add(dirName)
+    }
+    setExpandedDirs(newExpanded)
+  }
+
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase()
+    switch (ext) {
+      case 'md': return '📝'
+      case 'txt': return '📄'
+      case 'json': return '⚙️'
+      default: return '📄'
     }
   }
   
@@ -206,25 +277,6 @@ function App() {
                     </div>
                   </div>
 
-                  {/* 目录检查结果 */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium">目录结构检查：</h4>
-                    {requiredDirectories.map(reqDir => {
-                      const exists = selectedProject.directories.includes(reqDir)
-                      return (
-                        <div key={reqDir} className="flex items-center gap-2 text-sm">
-                          {exists ? (
-                            <span className="text-green-600">✅</span>
-                          ) : (
-                            <span className="text-red-600">❌</span>
-                          )}
-                          <span className={exists ? 'text-foreground' : 'text-muted-foreground'}>
-                            {reqDir}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
 
                   {/* 错误提示 */}
                   {!selectedProject.hasValidStructure && (
@@ -248,15 +300,98 @@ function App() {
                     </div>
                   )}
 
-                  {/* 成功提示 */}
-                  {selectedProject.hasValidStructure && (
-                    <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-                      <div className="text-sm text-green-800 mb-3">
-                        🎉 项目结构验证成功！现在可以浏览和编辑文件了
+                  {/* 文件树展示 */}
+                  {selectedProject.hasValidStructure && selectedProject.fileStructure && (
+                    <div className="mt-6">
+                      <div className="text-sm font-medium mb-4 text-green-800">
+                        🎉 项目加载成功，选择文件开始编辑：
                       </div>
-                      <div className="text-xs text-green-700">
-                        选择文件进行编辑，系统会自动切换到对应的AI角色
+                      
+                      {/* 文件树 */}
+                      <div className="space-y-1">
+                        {Object.keys(selectedProject.fileStructure || {})
+                          .sort((a, b) => {
+                            // 4个主目录优先排序
+                            const aIsMain = requiredDirectories.includes(a)
+                            const bIsMain = requiredDirectories.includes(b)
+                            
+                            if (aIsMain && bIsMain) {
+                              // 两个都是主目录，按照requiredDirectories的顺序
+                              return requiredDirectories.indexOf(a) - requiredDirectories.indexOf(b)
+                            } else if (aIsMain && !bIsMain) {
+                              // a是主目录，b不是，a排前面
+                              return -1
+                            } else if (!aIsMain && bIsMain) {
+                              // b是主目录，a不是，b排前面
+                              return 1
+                            } else {
+                              // 两个都不是主目录，按自然排序
+                              return a.localeCompare(b, 'zh', { numeric: true })
+                            }
+                          })
+                          .map(dirName => {
+                            const files = selectedProject.fileStructure?.[dirName] || []
+                            const isExpanded = expandedDirs.has(dirName)
+                            const hasFiles = files.length > 0
+                            
+                            return (
+                              <div key={dirName}>
+                                {/* 目录标题 */}
+                                <div 
+                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                    hasFiles 
+                                      ? 'hover:bg-muted/50' 
+                                      : 'text-muted-foreground cursor-not-allowed'
+                                  }`}
+                                  onClick={() => hasFiles && toggleDirectory(dirName)}
+                                >
+                                  <span className="text-sm">
+                                    {hasFiles ? (isExpanded ? '📂' : '📁') : '📁'}
+                                  </span>
+                                  <span className="text-sm font-medium">{dirName}</span>
+                                  <span className="text-xs text-muted-foreground ml-auto">
+                                    {files.length} 文件
+                                  </span>
+                                </div>
+                                
+                                {/* 文件列表 */}
+                                {isExpanded && hasFiles && (
+                                  <div className="ml-6 space-y-1">
+                                    {files.map(file => (
+                                      <div
+                                        key={file.path}
+                                        className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                          selectedFile?.path === file.path
+                                            ? 'bg-primary/10 border-l-2 border-primary'
+                                            : 'hover:bg-muted/30'
+                                        }`}
+                                        onClick={() => handleFileClick(file)}
+                                      >
+                                        <span className="text-sm">{getFileIcon(file.name)}</span>
+                                        <span className="text-sm flex-1">{file.name}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
                       </div>
+                      
+                      {/* 选中文件提示 */}
+                      {selectedFile && (
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                          <div className="text-sm text-blue-800">
+                            已选中: <strong>{selectedFile.name}</strong>
+                          </div>
+                          <div className="text-xs text-blue-600 mt-1">
+                            点击"对话"标签开始AI辅助创作
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
