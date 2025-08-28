@@ -1,0 +1,65 @@
+{
+  "currentSprint": "MVP前端开发",
+  "sprintStartDate": "2025-08-28",
+  "tasks": [
+    {
+      "id": "task-001",
+      "title": "搭建React + TypeScript + Vite项目基础",
+      "status": "completed",
+      "priority": "high",
+      "description": "初始化前端项目，配置开发环境",
+      "completedAt": "2025-08-28T10:45:00Z"
+    },
+    {
+      "id": "task-002", 
+      "title": "集成Tailwind CSS和Shadcn/ui组件库",
+      "status": "completed",
+      "priority": "high",
+      "description": "配置UI框架，应用GitHub/v0.app设计风格",
+      "completedAt": "2025-08-28T10:55:00Z"
+    },
+    {
+      "id": "task-003",
+      "title": "实现双栏布局界面",
+      "status": "completed", 
+      "priority": "high",
+      "description": "左侧AI对话区(350px) + 右侧编辑器区域",
+      "completedAt": "2025-08-28T10:50:00Z"
+    },
+    {
+      "id": "task-004",
+      "title": "添加AI角色指示器和切换功能",
+      "status": "completed",
+      "priority": "medium",
+      "description": "4角色(架构师、规划师、写手、总监)UI展示",
+      "completedAt": "2025-08-28T10:52:00Z"
+    },
+    {
+      "id": "task-005",
+      "title": "集成Monaco编辑器",
+      "status": "pending",
+      "priority": "high", 
+      "description": "替换右侧编辑区域的占位符，实现真正的代码编辑功能"
+    },
+    {
+      "id": "task-006",
+      "title": "实现响应式布局",
+      "status": "pending",
+      "priority": "medium",
+      "description": "移动端适配，小屏幕下的单栏布局"
+    },
+    {
+      "id": "task-007", 
+      "title": "连接PromptX MCP服务",
+      "status": "pending",
+      "priority": "high",
+      "description": "实现AI角色对话功能，集成后端API"
+    }
+  ],
+  "metrics": {
+    "totalTasks": 7,
+    "completedTasks": 4,
+    "pendingTasks": 3,
+    "completionRate": 0.571
+  }
+}

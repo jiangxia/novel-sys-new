@@ -1,0 +1,22 @@
+{
+  "projectName": "小说创作系统",
+  "projectId": "novel-creation-system",
+  "version": "1.0.0-alpha",
+  "description": "基于AI驱动的本地化小说创作平台，使用4角色AI协作和智能引导流程",
+  "createdAt": "2025-08-28T11:10:00Z",
+  "updatedAt": "2025-08-28T11:10:00Z",
+  "status": "active",
+  "technology": {
+    "frontend": "React 18 + TypeScript + Vite",
+    "backend": "Node.js + Express + TypeScript", 
+    "ui": "Shadcn/ui + Tailwind CSS",
+    "ai": "PromptX MCP + Gemini API",
+    "editor": "Monaco Editor"
+  },
+  "architecture": "frontend-backend-separation",
+  "currentPhase": "MVP开发",
+  "repository": {
+    "type": "local",
+    "path": "/Users/huangyanxiang/Desktop/黄明易/1、项目/开发/novel-sys-new"
+  }
+}

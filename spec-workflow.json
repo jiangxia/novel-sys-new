@@ -1,0 +1,49 @@
+{
+  "name": "小说创作系统",
+  "description": "基于AI驱动的本地化小说创作平台",
+  "version": "1.0.0",
+  "type": "web-application",
+  "framework": "React + TypeScript + Node.js",
+  "workflow": {
+    "phases": [
+      {
+        "name": "需求分析",
+        "status": "completed",
+        "tasks": [
+          "产品需求文档(PRD)",
+          "技术规格说明",
+          "开发规范制定"
+        ]
+      },
+      {
+        "name": "MVP前端开发",
+        "status": "pending",
+        "tasks": [
+          "React项目初始化",
+          "UI组件开发",
+          "双栏布局实现",
+          "AI对话界面"
+        ]
+      },
+      {
+        "name": "后端开发",
+        "status": "pending", 
+        "tasks": [
+          "Node.js服务器搭建",
+          "PromptX MCP集成",
+          "API接口开发",
+          "文件处理功能"
+        ]
+      },
+      {
+        "name": "系统集成",
+        "status": "pending",
+        "tasks": [
+          "前后端连接",
+          "AI角色系统集成",
+          "测试和调试"
+        ]
+      }
+    ]
+  }
+}

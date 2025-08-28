@@ -1,0 +1,45 @@
+{
+  "projectName": "小说创作系统 (Novel Creation System)",
+  "version": "1.0.0",
+  "description": "基于AI驱动的本地化小说创作平台",
+  "projectType": "web-application",
+  "framework": "React + TypeScript + Node.js",
+  "architecture": "frontend-backend-separation",
+  "aiIntegration": "PromptX MCP",
+  "createdAt": "2025-08-28",
+  "currentPhase": "MVP开发阶段",
+  "workflows": [
+    {
+      "name": "MVP前端开发",
+      "status": "in_progress",
+      "description": "React前端界面开发，双栏布局，AI对话系统"
+    },
+    {
+      "name": "PromptX MCP集成", 
+      "status": "pending",
+      "description": "集成AI角色系统和对话功能"
+    },
+    {
+      "name": "后端API开发",
+      "status": "pending", 
+      "description": "Node.js后端，文件处理，AI服务集成"
+    }
+  ],
+  "specifications": [
+    {
+      "name": "产品需求规格",
+      "file": "docs/【产品需求】PRD与设计规范.md",
+      "status": "completed"
+    },
+    {
+      "name": "技术规格说明",
+      "file": "docs/【技术规格】MVP Technical Specification.md", 
+      "status": "completed"
+    },
+    {
+      "name": "开发规范标准",
+      "file": "docs/【开发规范】Spec Workflow开发标准.md",
+      "status": "completed"
+    }
+  ]
+}
