@@ -3,8 +3,66 @@ import { useState } from 'react'
 
 type SidebarTab = 'chat' | 'files'
 
+interface ProjectStructure {
+  hasValidStructure: boolean
+  directories: string[]
+  missingDirectories: string[]
+  projectName: string
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<SidebarTab>('chat')
+  const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const requiredDirectories = [
+    '0-小说设定',
+    '1-故事大纲', 
+    '2-故事概要',
+    '3-小说内容'
+  ]
+
+  const validateProjectStructure = (files: FileList): ProjectStructure => {
+    const directories = Array.from(files)
+      .map(file => file.webkitRelativePath.split('/')[1])
+      .filter((dir, index, array) => dir && array.indexOf(dir) === index)
+    
+    const missingDirectories = requiredDirectories.filter(
+      reqDir => !directories.some(dir => dir === reqDir)
+    )
+
+    const projectName = files.length > 0 
+      ? files[0].webkitRelativePath.split('/')[0] 
+      : '未知项目'
+
+    return {
+      hasValidStructure: missingDirectories.length === 0,
+      directories,
+      missingDirectories,
+      projectName
+    }
+  }
+
+  const handleDirectorySelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+
+    setIsLoading(true)
+    
+    try {
+      // 模拟验证延迟
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      const structure = validateProjectStructure(files)
+      setSelectedProject(structure)
+      
+      // 验证成功后保持在文件Tab，让用户选择文件进行编辑
+    } catch (error) {
+      console.error('目录选择失败:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   
   return (
     <div className="h-screen flex bg-background text-foreground">
@@ -103,20 +161,106 @@ function App() {
           )}
 
           {activeTab === 'files' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="text-6xl mb-4">📁</div>
-              <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                选择本地目录开始小说创作项目
-              </p>
-              <div className="space-y-3 w-full max-w-sm">
-                <button className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
-                  选择项目目录
-                </button>
-                <div className="text-xs text-muted-foreground">
-                  需要包含：0-小说设定、1-故事大纲、2-故事概要、3-小说内容
+            <div className="flex-1 flex flex-col">
+              {!selectedProject ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="text-6xl mb-4">📁</div>
+                  <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    选择本地目录开始小说创作项目
+                  </p>
+                  <div className="space-y-3 w-full max-w-sm">
+                    <label className="w-full">
+                      <input
+                        type="file"
+                        {...({ webkitdirectory: "" } as any)}
+                        multiple
+                        onChange={handleDirectorySelect}
+                        disabled={isLoading}
+                        className="hidden"
+                      />
+                      <div className={`w-full px-4 py-3 rounded-md transition-colors cursor-pointer ${
+                        isLoading 
+                          ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      }`}>
+                        {isLoading ? '验证中...' : '选择项目目录'}
+                      </div>
+                    </label>
+                    <div className="text-xs text-muted-foreground">
+                      需要包含：0-小说设定、1-故事大纲、2-故事概要、3-小说内容
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex-1 p-4">
+                  {/* 项目信息 */}
+                  <div className="border-b border-border pb-4 mb-4">
+                    <h3 className="font-medium mb-1">{selectedProject.projectName}</h3>
+                    <div className={`text-sm ${
+                      selectedProject.hasValidStructure 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {selectedProject.hasValidStructure ? '✅ 目录结构正确' : '❌ 目录结构不完整'}
+                    </div>
+                  </div>
+
+                  {/* 目录检查结果 */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">目录结构检查：</h4>
+                    {requiredDirectories.map(reqDir => {
+                      const exists = selectedProject.directories.includes(reqDir)
+                      return (
+                        <div key={reqDir} className="flex items-center gap-2 text-sm">
+                          {exists ? (
+                            <span className="text-green-600">✅</span>
+                          ) : (
+                            <span className="text-red-600">❌</span>
+                          )}
+                          <span className={exists ? 'text-foreground' : 'text-muted-foreground'}>
+                            {reqDir}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* 错误提示 */}
+                  {!selectedProject.hasValidStructure && (
+                    <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                      <h4 className="text-sm font-medium text-red-800 mb-2">
+                        缺少必需目录：
+                      </h4>
+                      <ul className="text-sm text-red-700 space-y-1">
+                        {selectedProject.missingDirectories.map(dir => (
+                          <li key={dir}>• {dir}</li>
+                        ))}
+                      </ul>
+                      <div className="mt-3">
+                        <button
+                          onClick={() => setSelectedProject(null)}
+                          className="text-sm px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors"
+                        >
+                          重新选择
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 成功提示 */}
+                  {selectedProject.hasValidStructure && (
+                    <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                      <div className="text-sm text-green-800 mb-3">
+                        🎉 项目结构验证成功！现在可以浏览和编辑文件了
+                      </div>
+                      <div className="text-xs text-green-700">
+                        选择文件进行编辑，系统会自动切换到对应的AI角色
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

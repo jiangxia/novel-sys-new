@@ -1,43 +1,47 @@
 {
   "currentTask": {
-    "id": "task-2-4",
-    "title": "左侧Tab切换界面开发",
+    "id": "task-2-5",
+    "title": "本地目录选择组件开发",
     "phase": "前端开发",
-    "status": "completed",
-    "startedAt": "2025-08-28T11:50:00Z",
-    "completedAt": "2025-08-28T11:55:00Z",
+    "status": "in_progress",
+    "startedAt": "2025-08-28T12:00:00Z",
     "priority": "high",
-    "estimatedHours": 3,
-    "actualHours": 0.5,
-    "dependencies": ["task-2-3"],
-    "description": "实现左侧'对话'|'项目文件'两个Tab切换功能，为后续文件上传和AI对话做准备",
+    "estimatedHours": 4,
+    "actualHours": 0,
+    "dependencies": ["task-2-4"],
+    "description": "实现本地目录选择、目录结构验证、错误提示等核心功能",
     "acceptanceCriteria": [
-      "✅ 左侧添加Tab切换控件（对话|项目文件）",
-      "✅ 实现Tab内容区域的条件渲染",
-      "✅ 保持当前对话界面在'对话'Tab中",
-      "✅ 为'项目文件'Tab准备空白内容区域",
-      "✅ Tab切换状态管理和样式响应",
-      "✅ 符合技术规格的界面布局要求"
+      "✅ 实现本地目录选择功能（webkitdirectory）",
+      "✅ 验证4个必需目录结构（0-小说设定、1-故事大纲、2-故事概要、3-小说内容）",
+      "✅ 显示目录验证结果和错误提示",
+      "✅ 目录选择成功后显示项目信息",
+      "✅ 处理目录选择异常情况",
+      "✅ 用户友好的交互反馈"
     ],
     "completedSteps": [
       {
         "step": 1,
-        "description": "添加React状态管理（useState）",
+        "description": "添加ProjectStructure类型定义",
         "status": "completed"
       },
       {
         "step": 2,
-        "description": "实现Tab按钮的动态样式和点击事件",
+        "description": "实现目录结构验证逻辑",
         "status": "completed"
       },
       {
         "step": 3,
-        "description": "实现条件渲染显示不同Tab内容",
+        "description": "创建文件选择input组件（webkitdirectory）",
         "status": "completed"
       },
       {
         "step": 4,
-        "description": "创建项目文件Tab的占位界面",
+        "description": "实现目录验证结果展示界面",
+        "status": "completed"
+      },
+      {
+        "step": 5,
+        "description": "添加成功和失败状态的用户反馈",
         "status": "completed"
       }
     ]
@@ -62,6 +66,13 @@
       "title": "双栏布局界面实现", 
       "status": "completed",
       "completedAt": "2025-08-28T11:40:00Z",
+      "actualHours": 0.5
+    },
+    {
+      "id": "task-2-4",
+      "title": "左侧Tab切换界面开发",
+      "status": "completed",
+      "completedAt": "2025-08-28T11:55:00Z",
       "actualHours": 0.5
     }
   ]
