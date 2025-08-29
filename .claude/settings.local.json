@@ -19,7 +19,11 @@
       "Bash(npm run build:*)",
       "Bash(curl:*)",
       "mcp__spec-workflow__specs-workflow",
-      "Bash(npm init:*)"
+      "Bash(npm init:*)",
+      "WebSearch",
+      "Bash(mv:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []

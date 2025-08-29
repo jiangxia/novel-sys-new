@@ -1,6 +1,6 @@
 {
   "confirmed": {
-    "requirements": false,
+    "requirements": true,
     "design": false,
     "tasks": false
   },
