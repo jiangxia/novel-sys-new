@@ -17,7 +17,8 @@
       "Bash(mkdir:*)",
       "Bash(rm:*)",
       "Bash(npm run build:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__spec-workflow__specs-workflow"
     ],
     "deny": [],
     "ask": []

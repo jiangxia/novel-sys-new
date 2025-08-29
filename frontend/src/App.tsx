@@ -110,6 +110,10 @@ function App() {
   const [messageInput, setMessageInput] = useState('')
   const [isAILoading, setIsAILoading] = useState(false)
   
+  // 响应式布局状态
+  const [isMobile, setIsMobile] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  
   // 消息滚动ref
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -122,6 +126,22 @@ function App() {
   useEffect(() => {
     scrollToBottom()
   }, [chatMessages])
+  
+  // 响应式布局监听
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      // 移动端默认收起侧边栏
+      if (mobile && !sidebarCollapsed) {
+        setSidebarCollapsed(true)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   // 编辑器相关状态
   const [openTabs, setOpenTabs] = useState<EditorTab[]>([])
@@ -161,22 +181,30 @@ function App() {
     const fileStructure: DirectoryStructure = {}
     Array.from(files).forEach(file => {
       const pathParts = file.webkitRelativePath.split('/')
-      const directory = pathParts[1]
       const fileName = pathParts[pathParts.length - 1]
       
-      // 过滤隐藏文件和文件夹（以.开头）
-      if (directory && fileName && !directory.startsWith('.') && !fileName.startsWith('.')) {
-        if (!fileStructure[directory]) {
-          fileStructure[directory] = []
+      // 过滤隐藏文件（以.开头）
+      if (fileName && !fileName.startsWith('.')) {
+        // 只处理子目录中的文件，忽略根目录的文件
+        if (pathParts.length > 2) {
+          const directory = pathParts[1]
+          
+          // 过滤隐藏文件夹（以.开头）
+          if (directory && !directory.startsWith('.')) {
+            if (!fileStructure[directory]) {
+              fileStructure[directory] = []
+            }
+            
+            fileStructure[directory].push({
+              name: fileName,
+              path: file.webkitRelativePath,
+              type: 'file',
+              size: file.size,
+              file: file // 保存原始File对象
+            })
+          }
         }
-        
-        fileStructure[directory].push({
-          name: fileName,
-          path: file.webkitRelativePath,
-          type: 'file',
-          size: file.size,
-          file: file // 保存原始File对象
-        })
+        // 根目录文件（如README.md）不加入fileStructure
       }
     })
 
@@ -438,7 +466,7 @@ ${error instanceof Error ? error.message : '未知错误'}
         resolve(content || '')
       }
       
-      reader.onerror = (error) => {
+      reader.onerror = () => {
         reject(new Error('文件读取失败'))
       }
       
@@ -493,9 +521,25 @@ ${error instanceof Error ? error.message : '未知错误'}
   }
   
   return (
-    <div className="h-screen flex bg-background text-foreground">
-      {/* Left Sidebar - 350px fixed width */}
-      <div className="w-[350px] bg-card border-r border-border flex flex-col">
+    <div className="h-screen flex bg-background text-foreground relative">
+      {/* 移动端遮罩层 */}
+      {isMobile && !sidebarCollapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarCollapsed(true)}
+        />
+      )}
+      
+      {/* Left Sidebar */}
+      <div className={`${
+        isMobile 
+          ? `fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ${
+              sidebarCollapsed ? '-translate-x-full' : 'translate-x-0'
+            } w-[300px]`
+          : sidebarCollapsed 
+            ? 'w-0 overflow-hidden' 
+            : 'w-[350px]'
+      } bg-card border-r border-border flex flex-col`}>
         {/* Tab Header */}
         <div className="flex border-b border-border">
           <button 
@@ -830,13 +874,26 @@ ${error instanceof Error ? error.message : '未知错误'}
       <div className="flex-1 flex flex-col">
         {/* File Tab Header */}
         <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 gap-2 overflow-x-auto">
+          {/* 汉堡菜单按钮 */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="p-1 rounded hover:bg-muted transition-colors mr-2"
+            title={sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d={sidebarCollapsed ? "M4 6h16M4 12h16M4 18h16" : "M6 18L18 6M6 6l12 12"} />
+            </svg>
+          </button>
           {openTabs.length === 0 ? (
             <div className="text-sm text-muted-foreground">选择文件开始编辑</div>
           ) : (
             openTabs.map(tab => (
               <div
                 key={tab.id}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm transition-colors cursor-pointer flex-shrink-0 ${
+                className={`flex items-center gap-2 px-3 py-1 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
+                  isMobile ? 'text-xs min-w-[120px]' : 'text-sm'
+                } ${
                   activeTabId === tab.id
                     ? 'bg-background border border-border'
                     : 'bg-transparent hover:bg-muted/50'
@@ -845,13 +902,21 @@ ${error instanceof Error ? error.message : '未知错误'}
                   setActiveTabId(tab.id)
                   // 标签切换时也触发AI角色自动切换
                   switchAIRoleForFile(tab.path, tab.name)
+                  // 移动端点击标签后收起侧边栏
+                  if (isMobile) {
+                    setSidebarCollapsed(true)
+                  }
                 }}
               >
                 <span className="text-xs">{getFileIcon(tab.name)}</span>
-                <span className={tab.isModified ? 'text-orange-600' : ''}>{tab.name}</span>
+                <span className={`${tab.isModified ? 'text-orange-600' : ''} ${
+                  isMobile ? 'truncate max-w-[80px]' : ''
+                }`}>{tab.name}</span>
                 {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
                 <button 
-                  className="text-muted-foreground hover:text-foreground text-xs ml-1"
+                  className={`text-muted-foreground hover:text-foreground ml-1 ${
+                    isMobile ? 'text-sm p-1' : 'text-xs'
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation()
                     closeTab(tab.id)
@@ -879,16 +944,22 @@ ${error instanceof Error ? error.message : '未知错误'}
                   onChange={(value) => handleEditorChange(value, activeTab.id)}
                   theme="vs-dark"
                   options={{
-                    fontSize: 20,
+                    fontSize: isMobile ? 16 : 20,
                     fontFamily: 'Monaco, "Fira Code", Consolas, monospace',
-                    lineHeight: 30,
+                    lineHeight: isMobile ? 24 : 30,
                     wordWrap: 'on',
-                    minimap: { enabled: false },
+                    minimap: { enabled: !isMobile },
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
                     tabSize: 2,
                     insertSpaces: true,
-                    padding: { top: 16, bottom: 16 }
+                    padding: { top: 16, bottom: 16 },
+                    // 移动端优化
+                    folding: !isMobile,
+                    lineNumbers: isMobile ? 'off' : 'on',
+                    glyphMargin: !isMobile,
+                    lineDecorationsWidth: isMobile ? 0 : 10,
+                    lineNumbersMinChars: isMobile ? 0 : 3
                   }}
                 />
               )

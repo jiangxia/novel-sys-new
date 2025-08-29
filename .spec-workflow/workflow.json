@@ -16,21 +16,21 @@
         {
           "id": "task-1-1",
           "title": "产品需求文档(PRD)确认",
-          "status": "completed",
+          "status": "ready",
           "assignee": "Product Team",
           "completedDate": "2025-08-28T09:00:00Z"
         },
         {
           "id": "task-1-2", 
           "title": "技术架构设计",
-          "status": "completed",
+          "status": "ready",
           "assignee": "Technical Team",
           "completedDate": "2025-08-28T10:00:00Z"
         },
         {
           "id": "task-1-3",
           "title": "UI/UX设计方案确定",
-          "status": "completed", 
+          "status": "ready", 
           "assignee": "Design Team",
           "completedDate": "2025-08-28T10:30:00Z"
         }
@@ -40,96 +40,107 @@
       "id": "phase-2",
       "name": "前端开发", 
       "description": "React前端应用开发，双栏布局，AI对话界面",
-      "status": "ready",
+      "status": "completed",
       "dependencies": ["phase-1"],
       "estimatedDuration": "3-4 days",
+      "completedDate": "2025-08-29T14:00:00Z",
       "tasks": [
         {
           "id": "task-2-1",
           "title": "React + TypeScript + Vite 项目初始化",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 2,
-          "dependencies": []
+          "dependencies": [],
+          "completedDate": "2025-08-28T12:00:00Z"
         },
         {
           "id": "task-2-2",
           "title": "Tailwind CSS + Shadcn/ui 集成",
-          "status": "ready", 
+          "status": "completed", 
           "priority": "high",
           "estimatedHours": 3,
-          "dependencies": ["task-2-1"]
+          "dependencies": ["task-2-1"],
+          "completedDate": "2025-08-28T13:00:00Z"
         },
         {
           "id": "task-2-3",
           "title": "双栏布局界面实现",
-          "status": "ready",
+          "status": "completed",
           "priority": "high", 
           "estimatedHours": 4,
-          "dependencies": ["task-2-2"]
+          "dependencies": ["task-2-2"],
+          "completedDate": "2025-08-28T14:00:00Z"
         },
         {
           "id": "task-2-4",
           "title": "左侧Tab切换界面开发",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 3,
           "dependencies": ["task-2-3"],
-          "description": "实现左侧'对话'|'项目文件'两个Tab切换功能"
+          "description": "实现左侧'对话'|'项目文件'两个Tab切换功能",
+          "completedDate": "2025-08-28T15:00:00Z"
         },
         {
           "id": "task-2-5",
           "title": "本地目录选择组件开发",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 4,
           "dependencies": ["task-2-4"],
-          "description": "本地目录选择、目录结构验证、错误提示"
+          "description": "本地目录选择、目录结构验证、错误提示",
+          "completedDate": "2025-08-29T09:00:00Z"
         },
         {
           "id": "task-2-6",
           "title": "项目文件树展示组件",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 4,
           "dependencies": ["task-2-5"],
-          "description": "4目录结构树形展示、文件点击编辑功能"
+          "description": "4目录结构树形展示、文件点击编辑功能",
+          "completedDate": "2025-08-29T10:00:00Z"
         },
         {
           "id": "task-2-7",
           "title": "AI角色对话界面开发",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 6,
           "dependencies": ["task-2-4"],
-          "description": "4个AI角色切换、消息发送接收、对话历史"
+          "description": "4个AI角色切换、消息发送接收、对话历史",
+          "completedDate": "2025-08-29T11:00:00Z"
         },
         {
           "id": "task-2-8",
           "title": "Monaco编辑器集成",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 4,
           "dependencies": ["task-2-6"],
-          "description": "文件编辑器、文件保存、标签栏管理"
+          "description": "文件编辑器、文件保存、标签栏管理",
+          "completedDate": "2025-08-29T12:00:00Z"
         },
         {
           "id": "task-2-9",
           "title": "自动角色路由功能",
-          "status": "ready",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 3,
           "dependencies": ["task-2-7", "task-2-8"],
-          "description": "根据编辑文件类型自动切换对应AI角色"
+          "description": "根据编辑文件类型自动切换对应AI角色",
+          "completedDate": "2025-08-29T13:00:00Z"
         },
         {
           "id": "task-2-10",
           "title": "响应式布局支持",
-          "status": "ready",
+          "status": "completed",
           "priority": "medium",
           "estimatedHours": 3,
           "dependencies": ["task-2-9"],
-          "description": "移动端适配、布局优化"
+          "description": "移动端适配、布局优化",
+          "completedDate": "2025-08-29T14:00:00Z"
         }
       ]
     },
@@ -212,11 +223,11 @@
   ],
   "metrics": {
     "totalTasks": 21,
-    "completedTasks": 3,
-    "inProgressTasks": 1,
-    "pendingTasks": 17,
+    "completedTasks": 13,
+    "inProgressTasks": 0,
+    "pendingTasks": 8,
     "totalEstimatedHours": 69,
-    "completedHours": 2.5,
-    "remainingHours": 66.5
+    "completedHours": 38.5,
+    "remainingHours": 30.5
   }
 }
