@@ -316,19 +316,47 @@ function App() {
     setIsAILoading(true)
 
     try {
-      // 模拟AI响应（后续集成真实AI）
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+      // 调用真实的Gemini API
+      const response = await fetch('http://localhost:3002/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage.content
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      if (result.success) {
+        const aiMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: result.data.aiResponse,
+          timestamp: Date.now(),
+          roleId: currentRole.id
+        }
+        setChatMessages(prev => [...prev, aiMessage])
+      } else {
+        throw new Error(result.message || 'AI响应失败')
+      }
+    } catch (error) {
+      console.error('AI响应失败:', error)
       
-      const aiMessage: ChatMessage = {
+      // 添加错误消息
+      const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateMockAIResponse(userMessage.content, currentRole),
+        content: `抱歉，AI服务暂时不可用。错误信息: ${error instanceof Error ? error.message : '未知错误'}`,
         timestamp: Date.now(),
         roleId: currentRole.id
       }
-      setChatMessages(prev => [...prev, aiMessage])
-    } catch (error) {
-      console.error('AI响应失败:', error)
+      setChatMessages(prev => [...prev, errorMessage])
     } finally {
       setIsAILoading(false)
     }

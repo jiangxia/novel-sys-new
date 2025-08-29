@@ -31,11 +31,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API路由（后续扩展）
+// 导入路由
+const testRoutes = require('./routes/test');
+const aiRoutes = require('./routes/ai');
+
+// API路由
+app.use('/api/test', testRoutes);
+app.use('/api/ai', aiRoutes);
+
+// 404 API处理
 app.use('/api', (req, res) => {
   res.status(404).json({ 
     error: 'API endpoint not found',
-    availableEndpoints: ['/api/health']
+    availableEndpoints: ['/api/health', '/api/ai/chat', '/api/ai/health', '/api/test/gemini']
   });
 });
 

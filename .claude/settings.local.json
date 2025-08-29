@@ -23,7 +23,14 @@
       "WebSearch",
       "Bash(mv:*)",
       "WebFetch(domain:github.com)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(node server.js)",
+      "Bash(unset http_proxy)",
+      "Bash(HTTP_PROXY=http://127.0.0.1:7897 node server.js)",
+      "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-gemini.js)",
+      "Bash(unset HTTP_PROXY)",
+      "Bash(node:*)",
+      "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-direct-gemini.js)"
     ],
     "deny": [],
     "ask": []
