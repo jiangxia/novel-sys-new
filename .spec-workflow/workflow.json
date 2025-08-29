@@ -146,88 +146,164 @@
     },
     {
       "id": "phase-3",
-      "name": "后端开发",
-      "description": "Node.js后端API开发，PromptX MCP集成",
+      "name": "Gemini大模型集成",
+      "description": "配置Gemini API连接，建立大模型调用功能",
       "status": "planned",
       "dependencies": ["phase-2"],
-      "estimatedDuration": "2-3 days",
+      "estimatedDuration": "1-2 days",
       "tasks": [
         {
           "id": "task-3-1",
           "title": "Node.js + Express 服务器搭建",
-          "status": "planned",
+          "status": "completed",
           "priority": "high",
-          "estimatedHours": 3
+          "estimatedHours": 3,
+          "completedDate": "2025-08-29T13:30:00Z"
         },
         {
           "id": "task-3-2", 
-          "title": "PromptX MCP客户端集成",
+          "title": "Gemini API配置和连接测试",
           "status": "planned",
           "priority": "high", 
-          "estimatedHours": 6
+          "estimatedHours": 3,
+          "description": "配置Gemini API密钥，创建LLM Client，测试大模型调用"
         },
         {
           "id": "task-3-3",
-          "title": "文件上传和处理API",
+          "title": "基础AI对话接口开发",
           "status": "planned",
           "priority": "high",
-          "estimatedHours": 4
-        },
-        {
-          "id": "task-3-4",
-          "title": "AI对话API接口",
-          "status": "planned", 
-          "priority": "high",
-          "estimatedHours": 5
+          "estimatedHours": 2,
+          "dependencies": ["task-3-2"],
+          "description": "实现基础的AI对话API，支持消息发送和响应"
         }
       ]
     },
     {
       "id": "phase-4",
-      "name": "系统集成与测试",
-      "description": "前后端联调，整体测试，MVP完成",
-      "status": "planned", 
-      "dependencies": ["phase-2", "phase-3"],
-      "estimatedDuration": "1-2 days",
+      "name": "MCP基础设施",
+      "description": "搭建MCP协议通信基础架构",
+      "status": "planned",
+      "dependencies": ["phase-3"],
+      "estimatedDuration": "1 day",
       "tasks": [
         {
           "id": "task-4-1",
-          "title": "前后端API联调",
+          "title": "MCP SDK集成",
           "status": "planned",
           "priority": "high",
-          "estimatedHours": 4
+          "estimatedHours": 2,
+          "description": "安装MCP SDK，创建基础MCP Client架构"
         },
         {
           "id": "task-4-2",
-          "title": "AI角色系统集成测试", 
+          "title": "MCP连接机制建立", 
           "status": "planned",
           "priority": "high",
-          "estimatedHours": 3
+          "estimatedHours": 3,
+          "dependencies": ["task-4-1"],
+          "description": "建立MCP协议通信，验证JSON-RPC 2.0调用"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "PromptX MCP集成",
+      "description": "集成PromptX CLI和MCP Server，实现promptx工具调用",
+      "status": "planned",
+      "dependencies": ["phase-4"],
+      "estimatedDuration": "1-2 days",
+      "tasks": [
+        {
+          "id": "task-5-1",
+          "title": "PromptX CLI安装和配置",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "description": "安装promptx命令行工具，配置MCP Server启动"
         },
         {
-          "id": "task-4-3",
-          "title": "用户流程测试",
+          "id": "task-5-2",
+          "title": "PromptX工具验证",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 3,
+          "dependencies": ["task-5-1"],
+          "description": "验证promptx_action等工具可用性，测试MCP调用"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "AI角色系统",
+      "description": "实现4个AI角色的激活和切换功能",
+      "status": "planned",
+      "dependencies": ["phase-5"],
+      "estimatedDuration": "1 day",
+      "tasks": [
+        {
+          "id": "task-6-1",
+          "title": "角色提示词集成",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 3,
+          "description": "集成4个角色提示词，实现角色激活功能"
+        },
+        {
+          "id": "task-6-2",
+          "title": "角色切换和路由",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-6-1"],
+          "description": "实现角色切换逻辑和自动路由功能"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "系统集成与测试",
+      "description": "前后端联调，整体测试，MVP完成",
+      "status": "planned", 
+      "dependencies": ["phase-6"],
+      "estimatedDuration": "1 day",
+      "tasks": [
+        {
+          "id": "task-7-1",
+          "title": "前后端AI对话联调",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 3,
+          "description": "连接前端界面与后端AI功能，实现完整对话流程"
+        },
+        {
+          "id": "task-7-2",
+          "title": "自动角色路由测试", 
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-7-1"],
+          "description": "测试文件编辑时的自动角色切换功能"
+        },
+        {
+          "id": "task-7-3",
+          "title": "整体功能验证",
           "status": "planned",
           "priority": "medium", 
-          "estimatedHours": 2
-        },
-        {
-          "id": "task-4-4",
-          "title": "性能优化和Bug修复",
-          "status": "planned",
-          "priority": "medium",
-          "estimatedHours": 4
+          "estimatedHours": 2,
+          "dependencies": ["task-7-2"],
+          "description": "完整用户流程测试和bug修复"
         }
       ]
     }
   ],
   "metrics": {
-    "totalTasks": 21,
-    "completedTasks": 13,
+    "totalTasks": 23,
+    "completedTasks": 14,
     "inProgressTasks": 0,
-    "pendingTasks": 8,
-    "totalEstimatedHours": 69,
-    "completedHours": 38.5,
-    "remainingHours": 30.5
+    "pendingTasks": 9,
+    "totalEstimatedHours": 71,
+    "completedHours": 41.5,
+    "remainingHours": 29.5
   }
 }
