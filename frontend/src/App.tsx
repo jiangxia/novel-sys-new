@@ -121,6 +121,7 @@ function App() {
   
   // 消息滚动ref
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
   
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -705,6 +706,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                         {...({ webkitdirectory: "" } as any)}
                         multiple
                         onChange={handleDirectorySelect}
+                        ref={folderInputRef}
                         disabled={isLoading}
                         className="hidden"
                       />
