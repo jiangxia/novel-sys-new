@@ -111,6 +111,7 @@ function App() {
   const { toasts, addToast, removeToast } = useToastState()
   const [activeTab, setActiveTab] = useState<SidebarTab>('chat')
   const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
+  const [projectDirectoryHandle, setProjectDirectoryHandle] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
   
@@ -186,6 +187,9 @@ function App() {
     try {
       const directoryHandle = await (window as any).showDirectoryPicker();
       console.log('用户选择了项目目录:', directoryHandle.name);
+      
+      // 保存目录句柄
+      setProjectDirectoryHandle(directoryHandle);
       
       // 使用统一的扫描方法
       const { scanProjectDirectory } = await import('./utils/directoryScanner');
@@ -636,6 +640,23 @@ ${error instanceof Error ? error.message : '未知错误'}
               onProjectSelect={setSelectedProject}
               isLoading={isLoading}
               onDirectorySelect={handleDirectorySelect}
+              projectDirectoryHandle={projectDirectoryHandle}
+              onProjectRefresh={async () => {
+                if (projectDirectoryHandle) {
+                  setIsLoading(true);
+                  try {
+                    const { scanProjectDirectory } = await import('./utils/directoryScanner');
+                    const refreshedProject = await scanProjectDirectory(projectDirectoryHandle);
+                    setSelectedProject(refreshedProject);
+                    addToast('项目文件已刷新', 'success');
+                  } catch (error) {
+                    console.error('刷新项目失败:', error);
+                    addToast('刷新失败：' + (error as Error).message, 'error');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }
+              }}
             />
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import EmojiIcon from './EmojiIcon';
+import { Button } from './ui';
 
 interface DirectoryStructure {
   [key: string]: FileItem[];
@@ -26,6 +27,7 @@ interface FileTreeProps {
   project: ProjectStructure;
   selectedFile: FileItem | null;
   onFileClick: (file: FileItem) => void;
+  onRefresh?: () => void;
 }
 
 const requiredDirectories = [
@@ -45,7 +47,7 @@ const getFileIcon = (fileName: string) => {
   }
 };
 
-const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
+const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreeProps) => {
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
 
   const toggleDirectory = (dirName: string) => {
@@ -84,8 +86,25 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
   const otherDirs = allDirs.filter(dir => !requiredDirectories.includes(dir));
 
   return (
-    <div className="px-4">
-      <div className="space-y-0.5">
+    <div>
+      {/* 项目标题栏 */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <EmojiIcon emoji="📁" size="sm" background="gray" />
+          <span className="text-sm font-medium text-gray-800">{project.projectName}</span>
+        </div>
+        {onRefresh && (
+          <Button
+            size="sm"
+            onClick={onRefresh}
+          >
+            刷新
+          </Button>
+        )}
+      </div>
+      
+      <div className="px-4 py-2">
+        <div className="space-y-0.5">
         {/* 1. 首先渲染4个主要目录 */}
         {mainDirs
           .sort((a, b) => requiredDirectories.indexOf(a) - requiredDirectories.indexOf(b))
@@ -227,8 +246,8 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
             </span>
           </div>
         ))}
+        </div>
       </div>
-      
     </div>
   );
 };

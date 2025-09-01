@@ -98,78 +98,20 @@ const ProjectView = ({
 
 
 
-  const testCreateDirectories = async () => {
-    try {
-      if (!('showDirectoryPicker' in window)) {
-        addToast('您的浏览器不支持 File System Access API', 'error');
-        return;
-      }
-
-      let directoryHandle;
-      
-      if (projectDirectoryHandle) {
-        // 如果已有项目目录句柄，直接使用
-        directoryHandle = projectDirectoryHandle;
-        console.log('使用已保存的项目目录句柄');
-      } else {
-        // 否则让用户选择目录
-        directoryHandle = await (window as any).showDirectoryPicker();
-        console.log('用户选择的目录:', directoryHandle);
-      }
-
-      // 创建test目录
-      const testDirHandle = await directoryHandle.getDirectoryHandle('test', { 
-        create: true 
-      });
-      console.log('成功创建test目录:', testDirHandle);
-
-      // 如果有刷新回调，调用它来更新界面
-      if (onProjectRefresh) {
-        onProjectRefresh();
-      }
-
-      addToast('成功创建了 test 文件夹！', 'success');
-    } catch (error) {
-      console.error('创建目录失败:', error);
-      addToast('创建失败：' + (error as Error).message, 'error');
-    }
-  };
 
   return (
     <div className="flex-1 overflow-y-auto min-h-0">
       
-      {/* 测试按钮 */}
-      <div className="p-4 border-b flex gap-2">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={testCreateDirectories}
-        >
-          🧪 创建test目录
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={async () => {
-            console.log('刷新目录按钮被点击');
-            try {
-              const directoryHandle = await (window as any).showDirectoryPicker();
-              const newProject = await scanProjectDirectory(directoryHandle);
-              onProjectSelect(newProject);
-              console.log('刷新完成:', newProject);
-            } catch (error) {
-              console.error('刷新失败:', error);
-            }
-          }}
-        >
-          🔄 刷新目录
-        </Button>
-      </div>
 
       <FileTree 
         project={project}
         selectedFile={selectedFile}
         onFileClick={onFileClick}
+        onRefresh={async () => {
+          if (onProjectRefresh) {
+            onProjectRefresh();
+          }
+        }}
       />
     </div>
   );
