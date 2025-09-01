@@ -703,7 +703,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                       <div className="px-4">
                       
                       {/* 文件树 */}
-                      <div className="space-y-1">
+                      <div className="space-y-0.5">
                         {Object.keys(selectedProject.fileStructure || {})
                           .sort((a, b) => {
                             // 4个主目录优先排序
@@ -733,7 +733,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                               <div key={dirName}>
                                 {/* 目录标题 */}
                                 <div 
-                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
                                     hasFiles 
                                       ? 'hover:bg-gray-100 text-gray-800' 
                                       : 'text-gray-500 cursor-not-allowed'
@@ -753,13 +753,13 @@ ${error instanceof Error ? error.message : '未知错误'}
                                 
                                 {/* 文件列表 */}
                                 {isExpanded && hasFiles && (
-                                  <div className="ml-6 space-y-1">
+                                  <div className="ml-4 space-y-0.5">
                                     {files.map(file => (
                                       <div
                                         key={file.path}
-                                        className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                        className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
                                           selectedFile?.path === file.path
-                                            ? 'bg-blue-100 border-l-2 border-blue-500 text-gray-900'
+                                            ? 'bg-gray-900 text-white'
                                             : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                         onClick={() => handleFileClick(file)}
@@ -767,7 +767,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                                         <EmojiIcon 
                                           emoji={getFileIcon(file.name).emoji} 
                                           size="sm" 
-                                          background={getFileIcon(file.name).bg as any}
+                                          background="gray"
                                         />
                                         <span className="text-sm flex-1">{file.name}</span>
                                         <span className="text-xs text-gray-500">
