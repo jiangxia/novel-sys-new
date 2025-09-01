@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import EmojiIcon from './EmojiIcon';
 import { Button } from './ui';
+import FileTreeItem from './FileTreeItem';
 
 interface DirectoryStructure {
   [key: string]: FileItem[];
@@ -36,16 +37,6 @@ const requiredDirectories = [
   '2-故事概要',
   '3-小说内容'
 ];
-
-const getFileIcon = (fileName: string) => {
-  const ext = fileName.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'md': return '📝';
-    case 'txt': return '📄';
-    case 'json': return '⚙️';
-    default: return '📄';
-  }
-};
 
 const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreeProps) => {
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
@@ -111,7 +102,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
           .map(dirName => {
             const files = project.fileStructure?.[dirName] || [];
             const isExpanded = expandedDirs.has(dirName);
-            const hasFiles = true; // 允许空目录也能交互
+            const hasFiles = true;
             
             return (
               <div key={dirName}>
@@ -140,23 +131,12 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                 {isExpanded && hasFiles && (
                   <div className="ml-4 space-y-0.5">
                     {files.map(file => (
-                      <div
+                      <FileTreeItem
                         key={file.path}
-                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
-                        onClick={() => onFileClick(file)}
-                      >
-                        <EmojiIcon 
-                          emoji={getFileIcon(file.name)} 
-                          size="sm" 
-                          background="gray"
-                        />
-                        <span className={`text-sm flex-1 ${
-                          selectedFile?.path === file.path ? 'font-bold' : ''
-                        }`}>{file.name}</span>
-                        <span className="text-xs text-gray-500">
-                          {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
-                        </span>
-                      </div>
+                        file={file}
+                        isSelected={selectedFile?.path === file.path}
+                        onClick={onFileClick}
+                      />
                     ))}
                   </div>
                 )}
@@ -170,7 +150,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
           .map(dirName => {
             const files = project.fileStructure?.[dirName] || [];
             const isExpanded = expandedDirs.has(dirName);
-            const hasFiles = true; // 允许空目录也能交互
+            const hasFiles = true;
             
             return (
               <div key={dirName}>
@@ -196,23 +176,12 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                 {isExpanded && hasFiles && (
                   <div className="ml-4 space-y-0.5">
                     {files.map(file => (
-                      <div
+                      <FileTreeItem
                         key={file.path}
-                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
-                        onClick={() => onFileClick(file)}
-                      >
-                        <EmojiIcon 
-                          emoji={getFileIcon(file.name)} 
-                          size="sm" 
-                          background="gray"
-                        />
-                        <span className={`text-sm flex-1 ${
-                          selectedFile?.path === file.path ? 'font-bold' : ''
-                        }`}>{file.name}</span>
-                        <span className="text-xs text-gray-500">
-                          {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
-                        </span>
-                      </div>
+                        file={file}
+                        isSelected={selectedFile?.path === file.path}
+                        onClick={onFileClick}
+                      />
                     ))}
                   </div>
                 )}
@@ -222,23 +191,12 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
 
         {/* 3. 最后渲染根目录MD文件 */}
         {rootFiles.map(file => (
-          <div
+          <FileTreeItem
             key={file.path}
-            className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
-            onClick={() => onFileClick(file)}
-          >
-            <EmojiIcon 
-              emoji={getFileIcon(file.name)} 
-              size="sm" 
-              background="gray"
-            />
-            <span className={`text-sm flex-1 ${
-              selectedFile?.path === file.path ? 'font-bold' : ''
-            }`}>{file.name}</span>
-            <span className="text-xs text-gray-500">
-              {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
-            </span>
-          </div>
+            file={file}
+            isSelected={selectedFile?.path === file.path}
+            onClick={onFileClick}
+          />
         ))}
         </div>
       </div>

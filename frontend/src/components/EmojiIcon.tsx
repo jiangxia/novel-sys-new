@@ -1,11 +1,12 @@
 interface EmojiIconProps {
   emoji: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  background?: 'blue' | 'green' | 'purple' | 'orange' | 'gray';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  background?: 'blue' | 'green' | 'purple' | 'orange' | 'gray' | 'dark-gray';
 }
 
 const EmojiIcon = ({ emoji, size = 'md', background = 'gray' }: EmojiIconProps) => {
   const sizes = {
+    xs: 'w-6 h-6 text-sm',
     sm: 'w-8 h-8 text-lg',
     md: 'w-12 h-12 text-2xl', 
     lg: 'w-16 h-16 text-4xl',
@@ -17,7 +18,8 @@ const EmojiIcon = ({ emoji, size = 'md', background = 'gray' }: EmojiIconProps) 
     green: 'bg-gradient-to-br from-green-100 to-green-200', 
     purple: 'bg-gradient-to-br from-purple-100 to-purple-200',
     orange: 'bg-gradient-to-br from-orange-100 to-orange-200',
-    gray: 'bg-gradient-to-br from-gray-100 to-gray-200'
+    gray: 'bg-gradient-to-br from-gray-100 to-gray-200',
+    'dark-gray': 'bg-gradient-to-br from-gray-300 to-gray-400'
   }
   
   return (
