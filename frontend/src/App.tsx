@@ -693,7 +693,7 @@ ${error instanceof Error ? error.message : '未知错误'}
               {!selectedProject ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                   <div className="mb-6">
-                    <EmojiIcon emoji="📁" size="xl" background="blue" />
+                    <EmojiIcon emoji="📁" size="xl" background="gray" />
                   </div>
                   <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
                   <p className="text-sm text-muted-foreground mb-6">
@@ -809,7 +809,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                                   <EmojiIcon 
                                     emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
                                     size="sm" 
-                                    background="blue"
+                                    background="gray"
                                   />
                                   <span className="text-sm font-medium text-gray-200">{dirName}</span>
                                   <span className="text-xs text-gray-400 ml-auto">
@@ -967,7 +967,7 @@ ${error instanceof Error ? error.message : '未知错误'}
             <div className="h-full flex items-center justify-center text-center">
               <div className="flex flex-col items-center">
                 <div className="mb-6">
-                  <EmojiIcon emoji="📝" size="xl" background="orange" />
+                  <EmojiIcon emoji="📝" size="xl" background="gray" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
                 <p className="text-sm text-muted-foreground">
