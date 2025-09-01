@@ -34,16 +34,18 @@ app.get('/api/health', (req, res) => {
 // 导入路由
 const testRoutes = require('./routes/test');
 const aiRoutes = require('./routes/ai');
+const streamingRoutes = require('./routes/streaming');
 
 // API路由
 app.use('/api/test', testRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/streaming', streamingRoutes);
 
 // 404 API处理
 app.use('/api', (req, res) => {
   res.status(404).json({ 
     error: 'API endpoint not found',
-    availableEndpoints: ['/api/health', '/api/ai/chat', '/api/ai/health', '/api/test/gemini']
+    availableEndpoints: ['/api/health', '/api/ai/chat', '/api/ai/role-chat', '/api/ai/roles', '/api/ai/health', '/api/test/gemini', '/api/streaming/test', '/api/streaming/role/:roleId/stream']
   });
 });
 

@@ -47,6 +47,8 @@ class GeminiService {
       }
 
       const req = https.request(options, (res) => {
+        // 设置正确的编码
+        res.setEncoding('utf8');
         let responseData = '';
         res.on('data', (chunk) => responseData += chunk);
         res.on('end', () => {
@@ -134,6 +136,66 @@ class GeminiService {
         timestamp: new Date().toISOString()
       };
     }
+  }
+
+  /**
+   * 流式生成内容
+   */
+  async generateStream(systemPrompt, userMessage, options = {}) {
+    const fullPrompt = systemPrompt ? `${systemPrompt}\n\n用户消息：${userMessage}` : userMessage;
+    
+    const data = {
+      contents: [{
+        parts: [{ text: fullPrompt }]
+      }],
+      generationConfig: {
+        temperature: options.temperature || 0.9,
+        topK: 1,
+        topP: 1,
+        maxOutputTokens: 2048,
+      }
+    };
+
+    // 由于Gemini API不支持真正的流式，我们模拟流式效果
+    const result = await this.makeRequest(data);
+    const text = result.candidates[0].content.parts[0].text;
+    
+    return this.simulateStream(text);
+  }
+
+  /**
+   * 模拟流式输出效果
+   */
+  async* simulateStream(text) {
+    const chunks = this.chunkText(text, 10); // 每10个字符一个chunk
+    
+    for (const chunk of chunks) {
+      yield {
+        text: chunk,
+        timestamp: new Date().toISOString()
+      };
+      
+      // 添加延迟模拟真实流式效果
+      await this.delay(100);
+    }
+  }
+
+  /**
+   * 将文本分割成块
+   */
+  chunkText(text, chunkSize) {
+    const chunks = [];
+    for (let i = 0; i < text.length; i += chunkSize) {
+      chunks.push(text.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+
+  /**
+   * 延迟函数
+   */
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

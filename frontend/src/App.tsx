@@ -7,6 +7,7 @@ import ChatInput from './components/ChatInput'
 import RoleAvatar from './components/RoleAvatar'
 import EmojiIcon from './components/EmojiIcon'
 import ProjectView from './components/ProjectView'
+import StreamingChat from './components/StreamingChat'
 import { validateProjectStructure } from './utils/projectImporter'
 import type { ProjectStructure } from './utils/projectImporter'
 
@@ -266,14 +267,16 @@ function App() {
     setIsAILoading(true)
 
     try {
-      // 调用真实的Gemini API
-      const response = await fetch('http://localhost:3002/api/ai/chat', {
+      // 调用角色对话API
+      const response = await fetch('http://localhost:3002/api/ai/role-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage.content
+          roleId: currentRole.id,
+          message: userMessage.content,
+          scenario: 'creative'
         })
       })
 
@@ -289,7 +292,7 @@ function App() {
           role: 'assistant',
           content: result.data.aiResponse,
           timestamp: Date.now(),
-          roleId: currentRole.id
+          roleId: result.data.roleId
         }
         setChatMessages(prev => [...prev, aiMessage])
       } else {
@@ -544,81 +547,12 @@ ${error instanceof Error ? error.message : '未知错误'}
         {/* Tab Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {activeTab === 'chat' && (
-            <>
-              {/* AI Role Indicator */}
-              <div className="p-4 border-b border-gray-200 flex-shrink-0" style={{backgroundColor: '#F8F9FA'}}>
-                <div className="flex items-center gap-3">
-                  <RoleAvatar role={currentRole} size="sm" isActive={true} />
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">{currentRole.name}</div>
-                    <div className="text-xs text-gray-600">{currentRole.description}</div>
-                  </div>
-                  {selectedFile && (
-                    <div className="ml-auto text-xs text-gray-600">
-                      正在处理: {selectedFile.name}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Messages Area - 可滚动区域 */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 min-h-0">
-                {chatMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className="mb-4">
-                      <RoleAvatar role={currentRole} size="lg" isActive={true} />
-                    </div>
-                    <div className="text-lg font-medium mb-2 text-gray-800">{currentRole.name}</div>
-                    <div className="text-sm text-gray-400 mb-4">{currentRole.description}</div>
-                    <div className="text-sm text-gray-400">
-                      {selectedFile 
-                        ? `我可以帮您处理"${selectedFile.name}"文件的相关内容` 
-                        : '选择文件或直接开始对话吧！'}
-                    </div>
-                  </div>
-                ) : (
-                  chatMessages.map(message => (
-                    <ChatMessage 
-                      key={message.id} 
-                      message={message} 
-                      roles={aiRoles}
-                    />
-                  ))
-                )}
-                
-                {/* AI加载状态 */}
-                {isAILoading && (
-                  <div className="flex gap-3">
-                    <div className="mt-1 flex-shrink-0">
-                      <RoleAvatar role={currentRole} size="sm" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="bg-gray-100 rounded-lg p-3 text-sm border border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                          <span className="text-gray-600 text-xs ml-2">{currentRole.name}正在思考...</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {/* 滚动锚点 */}
-                <div ref={messagesEndRef} />
-              </div>
-              
-              {/* 新的ChatInput组件 */}
-              <ChatInput
-                currentRole={currentRole}
-                roles={aiRoles}
-                onSend={handleSendMessage}
-                onRoleChange={handleRoleSwitch}
-                isLoading={isAILoading}
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-              />
-            </>
+            <StreamingChat
+              currentRole={currentRole}
+              roles={aiRoles}
+              onRoleChange={setCurrentRole}
+              selectedFile={selectedFile}
+            />
           )}
 
           {activeTab === 'files' && (
