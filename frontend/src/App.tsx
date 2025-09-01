@@ -486,9 +486,13 @@ ${error instanceof Error ? error.message : '未知错误'}
       <Navbar 
         projectName={selectedProject?.projectName}
         onImportProject={() => {
+          console.log('导航栏导入项目按钮被点击');
           setActiveTab('files');
           // 延迟执行确保DOM已渲染
-          setTimeout(() => folderInputRef.current?.click(), 100);
+          setTimeout(() => {
+            console.log('尝试触发文件选择器', folderInputRef.current);
+            folderInputRef.current?.click();
+          }, 100);
         }}
         onShowHelp={() => alert('小说创作系统 - 基于AI的智能写作助手')}
       />

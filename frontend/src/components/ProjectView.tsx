@@ -106,6 +106,16 @@ const ProjectView = ({
 
   return (
     <div className="flex-1 overflow-y-auto min-h-0">
+      {/* 隐藏的文件输入框，确保导航栏导入按钮能正常工作 */}
+      <input
+        ref={folderInputRef}
+        type="file"
+        {...({ webkitdirectory: "" } as any)}
+        multiple
+        onChange={onDirectorySelect}
+        disabled={isLoading}
+        className="hidden"
+      />
       <FileTree 
         project={project}
         selectedFile={selectedFile}
