@@ -6,6 +6,8 @@ import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
 import RoleAvatar from './components/RoleAvatar'
 import EmojiIcon from './components/EmojiIcon'
+import { validateProjectStructure } from './utils/projectImporter'
+import type { ProjectStructure } from './utils/projectImporter'
 
 type SidebarTab = 'chat' | 'files'
 
@@ -170,64 +172,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [activeTabId, openTabs]) // 添加 openTabs 依赖，因为 saveFile 函数会用到
 
-  const validateProjectStructure = (files: FileList): ProjectStructure => {
-    const directories = Array.from(files)
-      .map(file => file.webkitRelativePath.split('/')[1])
-      .filter((dir, index, array) => dir && array.indexOf(dir) === index)
-    
-    const missingDirectories = requiredDirectories.filter(
-      reqDir => !directories.some(dir => dir === reqDir)
-    )
-
-    const projectName = files.length > 0 
-      ? files[0].webkitRelativePath.split('/')[0] 
-      : '未知项目'
-
-    // 构建文件结构 - 过滤隐藏文件，支持所有目录
-    const fileStructure: DirectoryStructure = {}
-    Array.from(files).forEach(file => {
-      const pathParts = file.webkitRelativePath.split('/')
-      const fileName = pathParts[pathParts.length - 1]
-      
-      // 过滤隐藏文件（以.开头）
-      if (fileName && !fileName.startsWith('.')) {
-        // 只处理子目录中的文件，忽略根目录的文件
-        if (pathParts.length > 2) {
-          const directory = pathParts[1]
-          
-          // 过滤隐藏文件夹（以.开头）
-          if (directory && !directory.startsWith('.')) {
-            if (!fileStructure[directory]) {
-              fileStructure[directory] = []
-            }
-            
-            fileStructure[directory].push({
-              name: fileName,
-              path: file.webkitRelativePath,
-              type: 'file',
-              size: file.size,
-              file: file // 保存原始File对象
-            })
-          }
-        }
-        // 根目录文件（如README.md）不加入fileStructure
-      }
-    })
-
-    // 对每个目录的文件进行排序
-    Object.keys(fileStructure).forEach(dirName => {
-      fileStructure[dirName].sort((a, b) => a.name.localeCompare(b.name, 'zh', { numeric: true }))
-    })
-
-    return {
-      hasValidStructure: missingDirectories.length === 0,
-      directories,
-      missingDirectories,
-      projectName,
-      fileStructure,
-      allFiles: files
-    }
-  }
 
   const handleDirectorySelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -560,7 +504,11 @@ ${error instanceof Error ? error.message : '未知错误'}
       {/* 导航栏 - 新增 */}
       <Navbar 
         projectName={selectedProject?.projectName}
-        onImportProject={() => folderInputRef.current?.click()}
+        onImportProject={() => {
+          setActiveTab('files');
+          // 延迟执行确保DOM已渲染
+          setTimeout(() => folderInputRef.current?.click(), 100);
+        }}
         onShowHelp={() => alert('小说创作系统 - 基于AI的智能写作助手')}
       />
       
