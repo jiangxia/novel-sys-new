@@ -30,7 +30,10 @@
       "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-gemini.js)",
       "Bash(unset HTTP_PROXY)",
       "Bash(node:*)",
-      "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-direct-gemini.js)"
+      "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-direct-gemini.js)",
+      "WebFetch(domain:md.doocs.org)",
+      "WebFetch(domain:v0.dev)",
+      "Bash(open http://localhost:3000)"
     ],
     "deny": [],
     "ask": []

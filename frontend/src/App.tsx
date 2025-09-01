@@ -1,6 +1,10 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
+import Navbar from './components/Navbar'
+import ChatMessage from './components/ChatMessage'
+import ChatInput from './components/ChatInput'
+import RoleAvatar from './components/RoleAvatar'
 
 type SidebarTab = 'chat' | 'files'
 
@@ -549,7 +553,17 @@ ${error instanceof Error ? error.message : '未知错误'}
   }
   
   return (
-    <div className="h-screen flex bg-background text-foreground relative">
+    <div className="h-screen flex flex-col bg-gray-50 text-gray-900 relative">
+      
+      {/* 导航栏 - 新增 */}
+      <Navbar 
+        projectName={selectedProject?.projectName}
+        onImportProject={() => folderInputRef.current?.click()}
+        onShowHelp={() => alert('小说创作系统 - 基于AI的智能写作助手')}
+      />
+      
+      {/* 主体区域 - 调整为flex-1 */}
+      <div className="flex-1 flex overflow-hidden">
       {/* 移动端遮罩层 */}
       {isMobile && !sidebarCollapsed && (
         <div 
@@ -680,49 +694,16 @@ ${error instanceof Error ? error.message : '未知错误'}
                 <div ref={messagesEndRef} />
               </div>
               
-              {/* Input Area - 固定在底部 */}
-              <div className="p-4 border-t border-border flex-shrink-0">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder={`向${currentRole.name}提问...`}
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSendMessage()
-                      }
-                    }}
-                    disabled={isAILoading}
-                    className="flex-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none disabled:opacity-50"
-                  />
-                  <button 
-                    onClick={handleSendMessage}
-                    disabled={!messageInput.trim() || isAILoading}
-                    className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isAILoading ? '发送中...' : '发送'}
-                  </button>
-                </div>
-                
-                {/* Role Switcher */}
-                <div className="mt-2 flex gap-1">
-                  {aiRoles.map(role => (
-                    <button
-                      key={role.id}
-                      onClick={() => handleRoleSwitch(role)}
-                      className={`text-xs px-2 py-1 rounded transition-colors ${
-                        currentRole.id === role.id
-                          ? `${role.color} text-white`
-                          : 'text-muted-foreground hover:text-foreground border border-border'
-                      }`}
-                    >
-                      {role.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* 新的ChatInput组件 */}
+              <ChatInput
+                currentRole={currentRole}
+                roles={aiRoles}
+                onSend={handleSendMessage}
+                onRoleChange={handleRoleSwitch}
+                isLoading={isAILoading}
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+              />
             </>
           )}
 
@@ -1031,6 +1012,7 @@ ${error instanceof Error ? error.message : '未知错误'}
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

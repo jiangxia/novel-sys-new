@@ -145,11 +145,110 @@
       ]
     },
     {
+      "id": "phase-2.5",
+      "name": "UI重构优化",
+      "description": "基于V0设计系统重构UI界面，提升专业化视觉体验",
+      "status": "planned",
+      "dependencies": ["phase-2"],
+      "estimatedDuration": "2-3 days",
+      "tasks": [
+        {
+          "id": "task-2.5-1",
+          "title": "基础设施准备",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 1,
+          "description": "安装Inter字体，配置TailwindCSS，更新package.json"
+        },
+        {
+          "id": "task-2.5-2",
+          "title": "更新基础CSS样式",
+          "status": "planned", 
+          "priority": "high",
+          "estimatedHours": 1,
+          "dependencies": ["task-2.5-1"],
+          "description": "修改index.css，应用V0设计系统的字体、间距、阴影"
+        },
+        {
+          "id": "task-2.5-3",
+          "title": "创建基础组件库",
+          "status": "planned",
+          "priority": "high", 
+          "estimatedHours": 2,
+          "dependencies": ["task-2.5-2"],
+          "description": "创建Icon、IconButton、Button、IconContainer基础组件"
+        },
+        {
+          "id": "task-2.5-4",
+          "title": "重构AI角色头像组件",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 1,
+          "dependencies": ["task-2.5-3"],
+          "description": "应用深色渐变色彩系统和V0圆角规范"
+        },
+        {
+          "id": "task-2.5-5",
+          "title": "添加导航栏组件",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-2.5-4"],
+          "description": "实现V0三段式导航栏：品牌区域+核心功能+操作区域"
+        },
+        {
+          "id": "task-2.5-6",
+          "title": "重构聊天消息组件",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-2.5-4"],
+          "description": "应用V0不对称圆角、阴影系统和专业色彩"
+        },
+        {
+          "id": "task-2.5-7",
+          "title": "重构输入框组件",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-2.5-3"],
+          "description": "实现V0双层容器架构：文本区域+功能按钮行"
+        },
+        {
+          "id": "task-2.5-8",
+          "title": "更新App.tsx主体结构",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 1,
+          "dependencies": ["task-2.5-5", "task-2.5-6", "task-2.5-7"],
+          "description": "集成导航栏，调整布局结构为flex-col"
+        },
+        {
+          "id": "task-2.5-9",
+          "title": "测试移动端响应式",
+          "status": "planned",
+          "priority": "medium",
+          "estimatedHours": 1,
+          "dependencies": ["task-2.5-8"],
+          "description": "验证移动端适配效果和V0响应式断点"
+        },
+        {
+          "id": "task-2.5-10",
+          "title": "最终视觉效果验证",
+          "status": "planned",
+          "priority": "medium",
+          "estimatedHours": 1,
+          "dependencies": ["task-2.5-9"],
+          "description": "对比V0标准，确认专业化视觉效果达标"
+        }
+      ]
+    },
+    {
       "id": "phase-3",
       "name": "Gemini大模型集成",
       "description": "配置Gemini API连接，建立大模型调用功能",
       "status": "planned",
-      "dependencies": ["phase-2"],
+      "dependencies": ["phase-2.5"],
       "estimatedDuration": "1-2 days",
       "tasks": [
         {
@@ -298,12 +397,12 @@
     }
   ],
   "metrics": {
-    "totalTasks": 23,
+    "totalTasks": 33,
     "completedTasks": 14,
     "inProgressTasks": 0,
-    "pendingTasks": 9,
-    "totalEstimatedHours": 71,
+    "pendingTasks": 19,
+    "totalEstimatedHours": 85,
     "completedHours": 41.5,
-    "remainingHours": 29.5
+    "remainingHours": 43.5
   }
 }
