@@ -9,6 +9,7 @@ import EmojiIcon from './components/EmojiIcon'
 import ProjectView from './components/ProjectView'
 import { ToastContainer } from './components/ui/Toast'
 import { ToastContext, useToastState } from './hooks/useToast'
+import TabDropdown from './components/TabDropdown'
 import type { ProjectStructure as ImportedProjectStructure } from './utils/projectImporter'
 
 type SidebarTab = 'chat' | 'files'
@@ -725,44 +726,65 @@ ${error instanceof Error ? error.message : '未知错误'}
           {openTabs.length === 0 ? (
             <div className="text-sm text-muted-foreground">选择文件开始编辑</div>
           ) : (
-            openTabs.map(tab => (
-              <div
-                key={tab.id}
-                className={`flex items-center gap-2 px-3 py-1 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
-                  isMobile ? 'text-xs min-w-[120px]' : 'text-sm'
-                } ${
-                  activeTabId === tab.id
-                    ? 'bg-background border border-border'
-                    : 'bg-transparent hover:bg-muted/50'
-                }`}
-                onClick={() => {
-                  setActiveTabId(tab.id)
-                  // 标签切换时也触发AI角色自动切换
-                  switchAIRoleForFile(tab.path, tab.name)
-                  // 移动端点击标签后收起侧边栏
-                  if (isMobile) {
-                    setSidebarCollapsed(true)
-                  }
-                }}
-              >
-                <span className="text-xs">📄</span>
-                <span className={`${tab.isModified ? 'text-orange-600' : ''} ${
-                  isMobile ? 'truncate max-w-[80px]' : ''
-                }`}>{tab.name}</span>
-                {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
-                <button 
-                  className={`text-muted-foreground hover:text-foreground ml-1 ${
-                    isMobile ? 'text-sm p-1' : 'text-xs'
+            <>
+              {/* 显示前5个标签 */}
+              {openTabs.slice(0, 5).map(tab => (
+                <div
+                  key={tab.id}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
+                    isMobile ? 'text-xs min-w-[120px]' : 'text-sm'
+                  } ${
+                    activeTabId === tab.id
+                      ? 'bg-background border border-border'
+                      : 'bg-transparent hover:bg-muted/50'
                   }`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    closeTab(tab.id)
+                  onClick={() => {
+                    setActiveTabId(tab.id)
+                    switchAIRoleForFile(tab.path, tab.name)
+                    if (isMobile) {
+                      setSidebarCollapsed(true)
+                    }
                   }}
                 >
-                  ×
-                </button>
-              </div>
-            ))
+                  <span className="text-xs">📄</span>
+                  <span className={`${tab.isModified ? 'text-orange-600' : ''} ${
+                    isMobile ? 'truncate max-w-[80px]' : ''
+                  }`}>{tab.name}</span>
+                  {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
+                  <button 
+                    className={`text-muted-foreground hover:text-foreground ml-1 ${
+                      isMobile ? 'text-sm p-1' : 'text-xs'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      closeTab(tab.id)
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              
+              {/* 超过5个标签时显示"更多..."下拉菜单 */}
+              {openTabs.length > 5 && (
+                <TabDropdown
+                  tabs={openTabs.slice(5)}
+                  activeTabId={activeTabId}
+                  onTabClick={(tabId) => {
+                    setActiveTabId(tabId);
+                    const tab = openTabs.find(t => t.id === tabId);
+                    if (tab) {
+                      switchAIRoleForFile(tab.path, tab.name);
+                    }
+                    if (isMobile) {
+                      setSidebarCollapsed(true);
+                    }
+                  }}
+                  onTabClose={closeTab}
+                  isMobile={isMobile}
+                />
+              )}
+            </>
           )}
         </div>
         
