@@ -5,6 +5,7 @@ import Navbar from './components/Navbar'
 import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
 import RoleAvatar from './components/RoleAvatar'
+import EmojiIcon from './components/EmojiIcon'
 
 type SidebarTab = 'chat' | 'files'
 
@@ -403,10 +404,10 @@ function App() {
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase()
     switch (ext) {
-      case 'md': return '📝'
-      case 'txt': return '📄'
-      case 'json': return '⚙️'
-      default: return '📄'
+      case 'md': return { emoji: '📝', bg: 'green' }
+      case 'txt': return { emoji: '📄', bg: 'gray' }
+      case 'json': return { emoji: '⚙️', bg: 'purple' }
+      default: return { emoji: '📄', bg: 'gray' }
     }
   }
   
@@ -690,7 +691,9 @@ ${error instanceof Error ? error.message : '未知错误'}
             <div className="flex-1 flex flex-col overflow-hidden">
               {!selectedProject ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                  <div className="text-6xl mb-4">📁</div>
+                  <div className="mb-6">
+                    <EmojiIcon emoji="📁" size="xl" background="blue" />
+                  </div>
                   <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     选择本地目录开始小说创作项目
@@ -801,9 +804,11 @@ ${error instanceof Error ? error.message : '未知错误'}
                                   }`}
                                   onClick={() => hasFiles && toggleDirectory(dirName)}
                                 >
-                                  <span className="text-sm">
-                                    {hasFiles ? (isExpanded ? '📂' : '📁') : '📁'}
-                                  </span>
+                                  <EmojiIcon 
+                                    emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
+                                    size="sm" 
+                                    background="blue"
+                                  />
                                   <span className="text-sm font-medium text-gray-200">{dirName}</span>
                                   <span className="text-xs text-gray-400 ml-auto">
                                     {files.length} 文件
@@ -823,7 +828,11 @@ ${error instanceof Error ? error.message : '未知错误'}
                                         }`}
                                         onClick={() => handleFileClick(file)}
                                       >
-                                        <span className="text-sm">{getFileIcon(file.name)}</span>
+                                        <EmojiIcon 
+                                          emoji={getFileIcon(file.name).emoji} 
+                                          size="sm" 
+                                          background={getFileIcon(file.name).bg as any}
+                                        />
                                         <span className="text-sm flex-1">{file.name}</span>
                                         <span className="text-xs text-gray-400">
                                           {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
@@ -954,8 +963,10 @@ ${error instanceof Error ? error.message : '未知错误'}
             })()
           ) : (
             <div className="h-full flex items-center justify-center text-center">
-              <div>
-                <div className="text-6xl mb-4">📝</div>
+              <div className="flex flex-col items-center">
+                <div className="mb-6">
+                  <EmojiIcon emoji="📝" size="xl" background="orange" />
+                </div>
                 <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
                 <p className="text-sm text-muted-foreground">
                   从左侧选择文件开始编辑
