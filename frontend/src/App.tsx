@@ -673,17 +673,6 @@ ${error instanceof Error ? error.message : '未知错误'}
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  {/* 项目信息 - 固定在顶部 */}
-                  <div className="border-b border-gray-700 p-4 flex-shrink-0">
-                    <h3 className="font-medium mb-1 text-gray-200">{selectedProject.projectName}</h3>
-                    <div className={`text-sm ${
-                      selectedProject.hasValidStructure 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
-                    }`}>
-                      {selectedProject.hasValidStructure ? '✅ 目录结构正确' : '❌ 目录结构不完整'}
-                    </div>
-                  </div>
 
                   {/* 可滚动的内容区域 */}
                   <div className="flex-1 overflow-y-auto min-h-0">
@@ -712,9 +701,6 @@ ${error instanceof Error ? error.message : '未知错误'}
                     {/* 文件树展示 */}
                     {selectedProject.hasValidStructure && selectedProject.fileStructure && (
                       <div className="px-4">
-                        <div className="text-sm font-medium mb-4 text-green-400">
-                          🎉 项目加载成功，选择文件开始编辑：
-                        </div>
                       
                       {/* 文件树 */}
                       <div className="space-y-1">
@@ -749,7 +735,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                                 <div 
                                   className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                                     hasFiles 
-                                      ? 'hover:bg-gray-800 text-gray-200' 
+                                      ? 'hover:bg-gray-100 text-gray-800' 
                                       : 'text-gray-500 cursor-not-allowed'
                                   }`}
                                   onClick={() => hasFiles && toggleDirectory(dirName)}
@@ -759,8 +745,8 @@ ${error instanceof Error ? error.message : '未知错误'}
                                     size="sm" 
                                     background="gray"
                                   />
-                                  <span className="text-sm font-medium text-gray-200">{dirName}</span>
-                                  <span className="text-xs text-gray-400 ml-auto">
+                                  <span className="text-sm font-medium text-gray-800">{dirName}</span>
+                                  <span className="text-xs text-gray-600 ml-auto">
                                     {files.length} 文件
                                   </span>
                                 </div>
@@ -773,8 +759,8 @@ ${error instanceof Error ? error.message : '未知错误'}
                                         key={file.path}
                                         className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                                           selectedFile?.path === file.path
-                                            ? 'bg-blue-900/50 border-l-2 border-blue-400 text-gray-100'
-                                            : 'hover:bg-gray-800 text-gray-300'
+                                            ? 'bg-blue-100 border-l-2 border-blue-500 text-gray-900'
+                                            : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                         onClick={() => handleFileClick(file)}
                                       >
@@ -784,7 +770,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                                           background={getFileIcon(file.name).bg as any}
                                         />
                                         <span className="text-sm flex-1">{file.name}</span>
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-gray-500">
                                           {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
                                         </span>
                                       </div>
