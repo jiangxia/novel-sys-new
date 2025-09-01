@@ -6,6 +6,7 @@ import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
 import RoleAvatar from './components/RoleAvatar'
 import EmojiIcon from './components/EmojiIcon'
+import ProjectView from './components/ProjectView'
 import { validateProjectStructure } from './utils/projectImporter'
 import type { ProjectStructure } from './utils/projectImporter'
 
@@ -109,7 +110,6 @@ function App() {
   const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set())
   
   // AI对话相关状态
   const [currentRole, setCurrentRole] = useState<AIRole>(aiRoles[0])
@@ -336,25 +336,6 @@ function App() {
     return roleResponses[Math.floor(Math.random() * roleResponses.length)]
   }
 
-  const toggleDirectory = (dirName: string) => {
-    const newExpanded = new Set(expandedDirs)
-    if (newExpanded.has(dirName)) {
-      newExpanded.delete(dirName)
-    } else {
-      newExpanded.add(dirName)
-    }
-    setExpandedDirs(newExpanded)
-  }
-
-  const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase()
-    switch (ext) {
-      case 'md': return { emoji: '📝', bg: 'green' }
-      case 'txt': return { emoji: '📄', bg: 'gray' }
-      case 'json': return { emoji: '⚙️', bg: 'purple' }
-      default: return { emoji: '📄', bg: 'gray' }
-    }
-  }
   
   const getFileLanguage = (fileName: string): string => {
     const ext = fileName.split('.').pop()?.toLowerCase()
@@ -637,168 +618,15 @@ ${error instanceof Error ? error.message : '未知错误'}
           )}
 
           {activeTab === 'files' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {!selectedProject ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                  <div className="mb-6">
-                    <EmojiIcon emoji="📁" size="xl" background="gray" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    选择本地目录开始小说创作项目
-                  </p>
-                  <div className="space-y-3 w-full max-w-sm">
-                    <label className="w-full">
-                      <input
-                        type="file"
-                        {...({ webkitdirectory: "" } as any)}
-                        multiple
-                        onChange={handleDirectorySelect}
-                        ref={folderInputRef}
-                        disabled={isLoading}
-                        className="hidden"
-                      />
-                      <div className={`w-full px-4 py-3 rounded-[6px] transition-colors cursor-pointer border font-medium ${
-                        isLoading 
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-gray-200'
-                          : 'bg-gray-900 text-white hover:bg-gray-800 border-gray-900'
-                      }`}>
-                        {isLoading ? '验证中...' : '选择项目目录'}
-                      </div>
-                    </label>
-                    <div className="text-xs text-muted-foreground">
-                      需要包含：0-小说设定、1-故事大纲、2-故事概要、3-小说内容
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col overflow-hidden">
-
-                  {/* 可滚动的内容区域 */}
-                  <div className="flex-1 overflow-y-auto min-h-0">
-                    {/* 错误提示 */}
-                    {!selectedProject.hasValidStructure && (
-                      <div className="p-4 bg-red-900/30 border border-red-700 rounded-md mx-4 mb-4">
-                        <h4 className="text-sm font-medium text-red-300 mb-2">
-                          缺少必需目录：
-                        </h4>
-                        <ul className="text-sm text-red-400 space-y-1">
-                          {selectedProject.missingDirectories.map(dir => (
-                            <li key={dir}>• {dir}</li>
-                          ))}
-                        </ul>
-                        <div className="mt-3">
-                          <button
-                            onClick={() => setSelectedProject(null)}
-                            className="text-sm px-3 py-1 bg-white border border-gray-300 text-gray-900 rounded-[6px] hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
-                          >
-                            重新选择
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 文件树展示 */}
-                    {selectedProject.hasValidStructure && selectedProject.fileStructure && (
-                      <div className="px-4">
-                      
-                      {/* 文件树 */}
-                      <div className="space-y-0.5">
-                        {Object.keys(selectedProject.fileStructure || {})
-                          .sort((a, b) => {
-                            // 4个主目录优先排序
-                            const aIsMain = requiredDirectories.includes(a)
-                            const bIsMain = requiredDirectories.includes(b)
-                            
-                            if (aIsMain && bIsMain) {
-                              // 两个都是主目录，按照requiredDirectories的顺序
-                              return requiredDirectories.indexOf(a) - requiredDirectories.indexOf(b)
-                            } else if (aIsMain && !bIsMain) {
-                              // a是主目录，b不是，a排前面
-                              return -1
-                            } else if (!aIsMain && bIsMain) {
-                              // b是主目录，a不是，b排前面
-                              return 1
-                            } else {
-                              // 两个都不是主目录，按自然排序
-                              return a.localeCompare(b, 'zh', { numeric: true })
-                            }
-                          })
-                          .map(dirName => {
-                            const files = selectedProject.fileStructure?.[dirName] || []
-                            const isExpanded = expandedDirs.has(dirName)
-                            const hasFiles = files.length > 0
-                            
-                            return (
-                              <div key={dirName}>
-                                {/* 目录标题 */}
-                                <div 
-                                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-                                    hasFiles 
-                                      ? 'hover:bg-gray-100 text-gray-800' 
-                                      : 'text-gray-500 cursor-not-allowed'
-                                  }`}
-                                  onClick={() => hasFiles && toggleDirectory(dirName)}
-                                >
-                                  <EmojiIcon 
-                                    emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
-                                    size="sm" 
-                                    background="gray"
-                                  />
-                                  <span className="text-sm font-medium text-gray-800">{dirName}</span>
-                                  <span className="text-xs text-gray-600 ml-auto">
-                                    {files.length} 文件
-                                  </span>
-                                </div>
-                                
-                                {/* 文件列表 */}
-                                {isExpanded && hasFiles && (
-                                  <div className="ml-4 space-y-0.5">
-                                    {files.map(file => (
-                                      <div
-                                        key={file.path}
-                                        className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-                                          selectedFile?.path === file.path
-                                            ? 'bg-gray-900 text-white'
-                                            : 'hover:bg-gray-100 text-gray-700'
-                                        }`}
-                                        onClick={() => handleFileClick(file)}
-                                      >
-                                        <EmojiIcon 
-                                          emoji={getFileIcon(file.name).emoji} 
-                                          size="sm" 
-                                          background="gray"
-                                        />
-                                        <span className="text-sm flex-1">{file.name}</span>
-                                        <span className="text-xs text-gray-500">
-                                          {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                      </div>
-                      
-                      {/* 选中文件提示 */}
-                      {selectedFile && (
-                        <div className="mt-4 p-3 bg-blue-900/30 border border-blue-700 rounded-md">
-                          <div className="text-sm text-blue-300">
-                            已选中: <strong>{selectedFile.name}</strong>
-                          </div>
-                          <div className="text-xs text-blue-400 mt-1">
-                            点击"对话"标签开始AI辅助创作
-                          </div>
-                        </div>
-                      )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <ProjectView
+              project={selectedProject}
+              selectedFile={selectedFile}
+              onFileClick={handleFileClick}
+              onProjectSelect={setSelectedProject}
+              isLoading={isLoading}
+              folderInputRef={folderInputRef}
+              onDirectorySelect={handleDirectorySelect}
+            />
           )}
         </div>
       </div>
@@ -841,7 +669,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                   }
                 }}
               >
-                <span className="text-xs">{getFileIcon(tab.name)}</span>
+                <span className="text-xs">📄</span>
                 <span className={`${tab.isModified ? 'text-orange-600' : ''} ${
                   isMobile ? 'truncate max-w-[80px]' : ''
                 }`}>{tab.name}</span>
