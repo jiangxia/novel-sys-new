@@ -44,8 +44,22 @@ export const validateProjectStructure = (files: FileList): ProjectStructure => {
     const pathParts = file.webkitRelativePath.split('/');
     const fileName = pathParts[pathParts.length - 1];
     
+    
     if (fileName && !fileName.startsWith('.')) {
-      if (pathParts.length > 2) {
+      if (pathParts.length === 2) {
+        // 根目录文件
+        if (!fileStructure['根目录']) {
+          fileStructure['根目录'] = [];
+        }
+        fileStructure['根目录'].push({
+          name: fileName,
+          path: file.webkitRelativePath,
+          type: 'file',
+          size: file.size,
+          file: file
+        });
+      } else if (pathParts.length > 2) {
+        // 子目录文件
         const directory = pathParts[1];
         
         if (directory && !directory.startsWith('.')) {

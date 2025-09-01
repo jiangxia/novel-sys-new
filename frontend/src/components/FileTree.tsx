@@ -75,10 +75,38 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
 
   if (!project.fileStructure) return null;
 
+  // 分离根目录文件和其他目录
+  const rootFiles = project.fileStructure?.['根目录'] || [];
+  const otherDirs = Object.keys(project.fileStructure || {}).filter(dir => dir !== '根目录');
+
   return (
     <div className="px-4">
       <div className="space-y-0.5">
-        {Object.keys(project.fileStructure)
+        {/* 先渲染根目录文件（直接显示，不包装在目录中） */}
+        {rootFiles.map(file => (
+          <div
+            key={file.path}
+            className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
+              selectedFile?.path === file.path
+                ? 'bg-gray-900 text-white'
+                : 'hover:bg-gray-100 text-gray-700'
+            }`}
+            onClick={() => onFileClick(file)}
+          >
+            <EmojiIcon 
+              emoji={getFileIcon(file.name)} 
+              size="sm" 
+              background="gray"
+            />
+            <span className="text-sm flex-1">{file.name}</span>
+            <span className="text-xs text-gray-500">
+              {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
+            </span>
+          </div>
+        ))}
+
+        {/* 然后渲染其他目录 */}
+        {otherDirs
           .sort((a, b) => {
             const aIsMain = requiredDirectories.includes(a);
             const bIsMain = requiredDirectories.includes(b);
@@ -107,7 +135,10 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
                       ? 'hover:bg-gray-100 text-gray-800' 
                       : 'text-gray-500 cursor-not-allowed'
                   }`}
-                  onClick={() => hasFiles && toggleDirectory(dirName)}
+                  onClick={() => {
+                    console.log('目录点击:', dirName, 'hasFiles:', hasFiles);
+                    hasFiles && toggleDirectory(dirName);
+                  }}
                 >
                   <EmojiIcon 
                     emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
