@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
 import FileTree from './FileTree';
 import EmojiIcon from './EmojiIcon';
+import { Button } from './ui';
+import { scanProjectDirectory } from '../utils/directoryScanner';
+import { useToast } from '../hooks/useToast';
 
 interface DirectoryStructure {
   [key: string]: FileItem[];
@@ -12,6 +16,10 @@ interface ProjectStructure {
   projectName: string;
   fileStructure?: DirectoryStructure;
   allFiles?: FileList;
+  autoCreated?: {
+    success: string[];
+    failed: string[];
+  };
 }
 
 interface FileItem {
@@ -28,8 +36,9 @@ interface ProjectViewProps {
   onFileClick: (file: FileItem) => void;
   onProjectSelect: (structure: ProjectStructure) => void;
   isLoading: boolean;
-  folderInputRef: React.RefObject<HTMLInputElement>;
-  onDirectorySelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onDirectorySelect: () => void;
+  projectDirectoryHandle?: any; // 存储项目目录句柄
+  onProjectRefresh?: () => void; // 刷新项目的回调
 }
 
 const ProjectView = ({ 
@@ -38,9 +47,23 @@ const ProjectView = ({
   onFileClick, 
   onProjectSelect,
   isLoading,
-  folderInputRef,
-  onDirectorySelect
+  onDirectorySelect,
+  projectDirectoryHandle,
+  onProjectRefresh
 }: ProjectViewProps) => {
+  const { addToast } = useToast();
+  
+  useEffect(() => {
+    if (project?.autoCreated) {
+      const { success, failed } = project.autoCreated;
+      if (success.length > 0) {
+        addToast(`已创建：${success.join('、')}`, 'success');
+      }
+      if (failed.length > 0) {
+        addToast(`创建失败：${failed.join('、')}`, 'error');
+      }
+    }
+  }, [project?.autoCreated, addToast]);
   
   if (!project) {
     return (
@@ -54,20 +77,14 @@ const ProjectView = ({
         </p>
         <div className="space-y-3 w-full max-w-sm">
           <label className="w-full">
-            <input
-              ref={folderInputRef}
-              type="file"
-              {...({ webkitdirectory: "" } as any)}
-              multiple
-              onChange={onDirectorySelect}
-              disabled={isLoading}
-              className="hidden"
-            />
-            <div className={`w-full px-4 py-3 rounded-[6px] transition-colors cursor-pointer border font-medium ${
-              isLoading 
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-gray-200'
-                : 'bg-gray-900 text-white hover:bg-gray-800 border-gray-900'
-            }`}>
+            <div 
+              className={`w-full px-4 py-3 rounded-[6px] transition-colors cursor-pointer border font-medium ${
+                isLoading 
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-gray-200'
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border-gray-900'
+              }`}
+              onClick={() => !isLoading && onDirectorySelect()}
+            >
               {isLoading ? '验证中...' : '选择项目目录'}
             </div>
           </label>
@@ -79,43 +96,76 @@ const ProjectView = ({
     );
   }
 
-  if (!project.hasValidStructure) {
-    return (
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="p-4 bg-red-900/30 border border-red-700 rounded-md mx-4 mb-4">
-          <h4 className="text-sm font-medium text-red-300 mb-2">
-            缺少必需目录：
-          </h4>
-          <ul className="text-sm text-red-400 space-y-1">
-            {project.missingDirectories.map(dir => (
-              <li key={dir}>• {dir}</li>
-            ))}
-          </ul>
-          <div className="mt-3">
-            <button
-              onClick={() => onProjectSelect(null as any)}
-              className="text-sm px-3 py-1 bg-white border border-gray-300 text-gray-900 rounded-[6px] hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
-            >
-              重新选择
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
+
+  const testCreateDirectories = async () => {
+    try {
+      if (!('showDirectoryPicker' in window)) {
+        addToast('您的浏览器不支持 File System Access API', 'error');
+        return;
+      }
+
+      let directoryHandle;
+      
+      if (projectDirectoryHandle) {
+        // 如果已有项目目录句柄，直接使用
+        directoryHandle = projectDirectoryHandle;
+        console.log('使用已保存的项目目录句柄');
+      } else {
+        // 否则让用户选择目录
+        directoryHandle = await (window as any).showDirectoryPicker();
+        console.log('用户选择的目录:', directoryHandle);
+      }
+
+      // 创建test目录
+      const testDirHandle = await directoryHandle.getDirectoryHandle('test', { 
+        create: true 
+      });
+      console.log('成功创建test目录:', testDirHandle);
+
+      // 如果有刷新回调，调用它来更新界面
+      if (onProjectRefresh) {
+        onProjectRefresh();
+      }
+
+      addToast('成功创建了 test 文件夹！', 'success');
+    } catch (error) {
+      console.error('创建目录失败:', error);
+      addToast('创建失败：' + (error as Error).message, 'error');
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto min-h-0">
-      {/* 隐藏的文件输入框，确保导航栏导入按钮能正常工作 */}
-      <input
-        ref={folderInputRef}
-        type="file"
-        {...({ webkitdirectory: "" } as any)}
-        multiple
-        onChange={onDirectorySelect}
-        disabled={isLoading}
-        className="hidden"
-      />
+      
+      {/* 测试按钮 */}
+      <div className="p-4 border-b flex gap-2">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={testCreateDirectories}
+        >
+          🧪 创建test目录
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={async () => {
+            console.log('刷新目录按钮被点击');
+            try {
+              const directoryHandle = await (window as any).showDirectoryPicker();
+              const newProject = await scanProjectDirectory(directoryHandle);
+              onProjectSelect(newProject);
+              console.log('刷新完成:', newProject);
+            } catch (error) {
+              console.error('刷新失败:', error);
+            }
+          }}
+        >
+          🔄 刷新目录
+        </Button>
+      </div>
+
       <FileTree 
         project={project}
         selectedFile={selectedFile}

@@ -7,6 +7,8 @@ import ChatInput from './components/ChatInput'
 import RoleAvatar from './components/RoleAvatar'
 import EmojiIcon from './components/EmojiIcon'
 import ProjectView from './components/ProjectView'
+import { ToastContainer } from './components/ui/Toast'
+import { ToastContext, useToastState } from './hooks/useToast'
 import { validateProjectStructure } from './utils/projectImporter'
 import type { ProjectStructure } from './utils/projectImporter'
 
@@ -106,6 +108,7 @@ const aiRoles: AIRole[] = [
 ]
 
 function App() {
+  const { toasts, addToast, removeToast } = useToastState()
   const [activeTab, setActiveTab] = useState<SidebarTab>('chat')
   const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -123,7 +126,6 @@ function App() {
   
   // 消息滚动ref
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const folderInputRef = useRef<HTMLInputElement>(null)
   
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -173,22 +175,29 @@ function App() {
   }, [activeTabId, openTabs]) // 添加 openTabs 依赖，因为 saveFile 函数会用到
 
 
-  const handleDirectorySelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
+  const handleDirectorySelect = async () => {
+    if (!('showDirectoryPicker' in window)) {
+      alert('您的浏览器不支持 File System Access API，请使用Chrome、Edge等现代浏览器');
+      return;
+    }
 
     setIsLoading(true)
     
     try {
-      // 模拟验证延迟
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const directoryHandle = await (window as any).showDirectoryPicker();
+      console.log('用户选择了项目目录:', directoryHandle.name);
       
-      const structure = validateProjectStructure(files)
-      setSelectedProject(structure)
+      // 使用统一的扫描方法
+      const { scanProjectDirectory } = await import('./utils/directoryScanner');
+      const structure = await scanProjectDirectory(directoryHandle);
+      setSelectedProject(structure);
       
-      // 验证成功后保持在文件Tab，让用户选择文件进行编辑
+      console.log('项目导入完成:', structure);
     } catch (error) {
-      console.error('目录选择失败:', error)
+      if ((error as Error).name !== 'AbortError') {
+        console.error('导入项目失败:', error);
+        alert('导入失败：' + (error as Error).message);
+      }
     } finally {
       setIsLoading(false)
     }
@@ -480,7 +489,8 @@ ${error instanceof Error ? error.message : '未知错误'}
   }
   
   return (
-    <div className="h-screen flex flex-col bg-gray-50 text-gray-900 relative">
+    <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
+      <div className="h-screen flex flex-col bg-gray-50 text-gray-900 relative">
       
       {/* 导航栏 - 新增 */}
       <Navbar 
@@ -488,11 +498,8 @@ ${error instanceof Error ? error.message : '未知错误'}
         onImportProject={() => {
           console.log('导航栏导入项目按钮被点击');
           setActiveTab('files');
-          // 延迟执行确保DOM已渲染
-          setTimeout(() => {
-            console.log('尝试触发文件选择器', folderInputRef.current);
-            folderInputRef.current?.click();
-          }, 100);
+          // 直接调用导入方法
+          handleDirectorySelect();
         }}
         onShowHelp={() => alert('小说创作系统 - 基于AI的智能写作助手')}
       />
@@ -628,7 +635,6 @@ ${error instanceof Error ? error.message : '未知错误'}
               onFileClick={handleFileClick}
               onProjectSelect={setSelectedProject}
               isLoading={isLoading}
-              folderInputRef={folderInputRef}
               onDirectorySelect={handleDirectorySelect}
             />
           )}
@@ -772,7 +778,11 @@ ${error instanceof Error ? error.message : '未知错误'}
         </div>
       </div>
       </div>
-    </div>
+      
+      {/* Toast 容器 */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </div>
+    </ToastContext.Provider>
   )
 }
 

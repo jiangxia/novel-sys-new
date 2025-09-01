@@ -92,7 +92,7 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
           .map(dirName => {
             const files = project.fileStructure?.[dirName] || [];
             const isExpanded = expandedDirs.has(dirName);
-            const hasFiles = files.length > 0;
+            const hasFiles = true; // 允许空目录也能交互
             
             return (
               <div key={dirName}>
@@ -114,7 +114,7 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
                   />
                   <span className="text-sm font-medium text-gray-800">{dirName}</span>
                   <span className="text-xs text-gray-600 ml-auto">
-                    {files.length} 文件
+                    {files.length > 0 ? `${files.length} 文件` : '空目录'}
                   </span>
                 </div>
                 
@@ -153,7 +153,7 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
           .map(dirName => {
             const files = project.fileStructure?.[dirName] || [];
             const isExpanded = expandedDirs.has(dirName);
-            const hasFiles = files.length > 0;
+            const hasFiles = true; // 允许空目录也能交互
             
             return (
               <div key={dirName}>
@@ -172,7 +172,7 @@ const FileTree = ({ project, selectedFile, onFileClick }: FileTreeProps) => {
                   />
                   <span className="text-sm font-medium text-gray-800">{dirName}</span>
                   <span className="text-xs text-gray-600 ml-auto">
-                    {files.length} 文件
+                    {files.length > 0 ? `${files.length} 文件` : '空目录'}
                   </span>
                 </div>
                 
