@@ -748,8 +748,8 @@ ${error instanceof Error ? error.message : '未知错误'}
                 >
                   <span className="text-xs">📄</span>
                   <span className={`${tab.isModified ? 'text-orange-600' : ''} ${
-                    isMobile ? 'truncate max-w-[80px]' : ''
-                  }`}>{tab.name}</span>
+                    isMobile ? 'truncate max-w-[80px]' : 'truncate max-w-[120px]'
+                  }`} title={tab.name}>{tab.name}</span>
                   {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
                   <button 
                     className={`text-muted-foreground hover:text-foreground ml-1 ${

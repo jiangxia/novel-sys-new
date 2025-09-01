@@ -80,7 +80,7 @@ const TabDropdown = ({ tabs, activeTabId, onTabClick, onTabClose, isMobile }: Ta
                 }}
               >
                 <span className="text-xs">📄</span>
-                <span className={`flex-1 text-sm ${tab.isModified ? 'text-orange-600' : ''}`}>
+                <span className={`flex-1 text-sm truncate max-w-[140px] ${tab.isModified ? 'text-orange-600' : ''}`} title={tab.name}>
                   {tab.name}
                 </span>
                 {tab.isModified && <span className="text-orange-600 text-xs">●</span>}
