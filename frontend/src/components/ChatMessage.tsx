@@ -11,55 +11,61 @@ interface AIRole {
 
 interface Message {
   id: string;
+  role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
-  role?: AIRole;
+  timestamp: number;
+  roleId?: string;
 }
 
 interface ChatMessageProps {
   message: Message;
-  role?: AIRole;
-  isUser: boolean;
+  roles: AIRole[];
 }
 
-const formatTime = (timestamp: Date) => {
-  return timestamp.toLocaleTimeString('zh-CN', { 
+const formatTime = (timestamp: number) => {
+  return new Date(timestamp).toLocaleTimeString('zh-CN', { 
     hour12: false, 
     hour: '2-digit', 
     minute: '2-digit' 
   });
 }
 
-const ChatMessage = ({ message, role, isUser }: ChatMessageProps) => {
-  if (isUser) {
+const ChatMessage = ({ message, roles }: ChatMessageProps) => {
+  // 根据消息的roleId找到对应的角色信息
+  const messageRole = message.roleId ? roles.find(role => role.id === message.roleId) : null;
+  
+  if (message.role === 'user') {
     return (
-      <div className="flex justify-end mb-6">
-        <div className="max-w-[70%] bg-gray-900 text-gray-100 
-                        px-5 py-4 rounded-message rounded-br-md
-                        shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
-          <p className="text-sm leading-relaxed font-normal">{message.content}</p>
-          <span className="text-xs text-gray-400 mt-3 block font-mono">
+      <div className="flex gap-3 justify-end">
+        <div className="flex-1 max-w-[80%]">
+          <div className="bg-gray-900 text-white ml-auto rounded-lg p-3 text-sm">
+            {message.content}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
             {formatTime(message.timestamp)}
-          </span>
+          </div>
+        </div>
+        <div className="mt-1 flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 
+                          flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+            <span className="text-white text-xs font-medium">我</span>
+          </div>
         </div>
       </div>
     )
   }
   
   return (
-    <div className="flex gap-4 mb-6 group">
-      {role && <RoleAvatar role={role} size="sm" />}
+    <div className="flex gap-3">
+      <div className="mt-1 flex-shrink-0">
+        {messageRole && <RoleAvatar role={messageRole} size="sm" />}
+      </div>
       <div className="flex-1">
-        <div className="bg-white border border-gray-200 
-                        px-5 py-4 rounded-message rounded-tl-md
-                        shadow-hover ring-1 ring-gray-100
-                        group-hover:shadow-popup transition-all duration-normal ease-out">
-          <p className="text-sm leading-relaxed text-gray-800">{message.content}</p>
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-            <span className="text-xs text-gray-500 font-mono">
-              {role?.name} · {formatTime(message.timestamp)}
-            </span>
-          </div>
+        <div className="bg-gray-100 text-gray-900 border border-gray-200 rounded-lg p-3 text-sm">
+          {message.content}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {formatTime(message.timestamp)}
         </div>
       </div>
     </div>

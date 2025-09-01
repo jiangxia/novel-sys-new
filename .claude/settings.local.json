@@ -33,7 +33,8 @@
       "Bash(HTTP_PROXY=http://127.0.0.1:7897 node test-direct-gemini.js)",
       "WebFetch(domain:md.doocs.org)",
       "WebFetch(domain:v0.dev)",
-      "Bash(open http://localhost:3000)"
+      "Bash(open http://localhost:3000)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

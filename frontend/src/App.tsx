@@ -643,33 +643,11 @@ ${error instanceof Error ? error.message : '未知错误'}
                   </div>
                 ) : (
                   chatMessages.map(message => (
-                    <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                      {message.role === 'assistant' && (
-                        <div className="mt-1 flex-shrink-0">
-                          <RoleAvatar role={currentRole} size="sm" />
-                        </div>
-                      )}
-                      <div className={`flex-1 ${message.role === 'user' ? 'max-w-[80%]' : ''}`}>
-                        <div className={`rounded-lg p-3 text-sm ${
-                          message.role === 'user' 
-                            ? 'bg-gray-900 text-white ml-auto' 
-                            : 'bg-gray-100 text-gray-900 border border-gray-200'
-                        }`}>
-                          {message.content}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </div>
-                      </div>
-                      {message.role === 'user' && (
-                        <div className="mt-1 flex-shrink-0">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 
-                                          flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
-                            <span className="text-white text-xs font-medium">我</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <ChatMessage 
+                      key={message.id} 
+                      message={message} 
+                      roles={aiRoles}
+                    />
                   ))
                 )}
                 
