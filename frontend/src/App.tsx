@@ -581,15 +581,15 @@ ${error instanceof Error ? error.message : '未知错误'}
           : sidebarCollapsed 
             ? 'w-0 overflow-hidden' 
             : 'w-[350px]'
-      } bg-card border-r border-border flex flex-col`}>
+      } border-r border-gray-200 flex flex-col`} style={{backgroundColor: '#F8F9FA'}}>
         {/* Tab Header */}
-        <div className="flex border-b border-border">
+        <div className="flex border-b border-gray-200">
           <button 
             onClick={() => setActiveTab('chat')}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === 'chat'
-                ? 'text-primary border-b-2 border-primary bg-background'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             对话
@@ -598,8 +598,8 @@ ${error instanceof Error ? error.message : '未知错误'}
             onClick={() => setActiveTab('files')}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === 'files'
-                ? 'text-primary border-b-2 border-primary bg-background'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             项目文件
@@ -611,17 +611,15 @@ ${error instanceof Error ? error.message : '未知错误'}
           {activeTab === 'chat' && (
             <>
               {/* AI Role Indicator */}
-              <div className="p-4 border-b border-border bg-muted/30 flex-shrink-0">
+              <div className="p-4 border-b border-gray-200 flex-shrink-0" style={{backgroundColor: '#F8F9FA'}}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full ${currentRole.color} flex items-center justify-center`}>
-                    <span className="text-white text-sm font-medium">{currentRole.avatar}</span>
-                  </div>
+                  <RoleAvatar role={currentRole} size="sm" isActive={true} />
                   <div>
-                    <div className="text-sm font-medium">{currentRole.name}</div>
-                    <div className="text-xs text-muted-foreground">{currentRole.description}</div>
+                    <div className="text-sm font-medium text-gray-800">{currentRole.name}</div>
+                    <div className="text-xs text-gray-600">{currentRole.description}</div>
                   </div>
                   {selectedFile && (
-                    <div className="ml-auto text-xs text-muted-foreground">
+                    <div className="ml-auto text-xs text-gray-600">
                       正在处理: {selectedFile.name}
                     </div>
                   )}
@@ -632,12 +630,12 @@ ${error instanceof Error ? error.message : '未知错误'}
               <div className="flex-1 p-4 overflow-y-auto space-y-4 min-h-0">
                 {chatMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className={`w-16 h-16 rounded-full ${currentRole.color} flex items-center justify-center mb-4`}>
-                      <span className="text-white text-2xl font-bold">{currentRole.avatar}</span>
+                    <div className="mb-4">
+                      <RoleAvatar role={currentRole} size="lg" isActive={true} />
                     </div>
-                    <div className="text-lg font-medium mb-2">{currentRole.name}</div>
-                    <div className="text-sm text-muted-foreground mb-4">{currentRole.description}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-lg font-medium mb-2 text-gray-800">{currentRole.name}</div>
+                    <div className="text-sm text-gray-400 mb-4">{currentRole.description}</div>
+                    <div className="text-sm text-gray-400">
                       {selectedFile 
                         ? `我可以帮您处理"${selectedFile.name}"文件的相关内容` 
                         : '选择文件或直接开始对话吧！'}
@@ -647,25 +645,28 @@ ${error instanceof Error ? error.message : '未知错误'}
                   chatMessages.map(message => (
                     <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                       {message.role === 'assistant' && (
-                        <div className={`w-6 h-6 rounded-full ${currentRole.color} flex items-center justify-center mt-1 flex-shrink-0`}>
-                          <span className="text-white text-xs">{currentRole.avatar}</span>
+                        <div className="mt-1 flex-shrink-0">
+                          <RoleAvatar role={currentRole} size="sm" />
                         </div>
                       )}
                       <div className={`flex-1 ${message.role === 'user' ? 'max-w-[80%]' : ''}`}>
                         <div className={`rounded-lg p-3 text-sm ${
                           message.role === 'user' 
-                            ? 'bg-primary text-primary-foreground ml-auto' 
-                            : 'bg-muted'
+                            ? 'bg-gray-900 text-white ml-auto' 
+                            : 'bg-gray-100 text-gray-900 border border-gray-200'
                         }`}>
                           {message.content}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-xs text-gray-500 mt-1">
                           {new Date(message.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
                       {message.role === 'user' && (
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mt-1 flex-shrink-0">
-                          <span className="text-muted-foreground text-xs">我</span>
+                        <div className="mt-1 flex-shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 
+                                          flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+                            <span className="text-white text-xs font-medium">我</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -675,16 +676,16 @@ ${error instanceof Error ? error.message : '未知错误'}
                 {/* AI加载状态 */}
                 {isAILoading && (
                   <div className="flex gap-3">
-                    <div className={`w-6 h-6 rounded-full ${currentRole.color} flex items-center justify-center mt-1`}>
-                      <span className="text-white text-xs">{currentRole.avatar}</span>
+                    <div className="mt-1 flex-shrink-0">
+                      <RoleAvatar role={currentRole} size="sm" />
                     </div>
                     <div className="flex-1">
-                      <div className="bg-muted rounded-lg p-3 text-sm">
+                      <div className="bg-gray-100 rounded-lg p-3 text-sm border border-gray-200">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                          <span className="text-muted-foreground text-xs ml-2">{currentRole.name}正在思考...</span>
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          <span className="text-gray-600 text-xs ml-2">{currentRole.name}正在思考...</span>
                         </div>
                       </div>
                     </div>
@@ -726,10 +727,10 @@ ${error instanceof Error ? error.message : '未知错误'}
                         disabled={isLoading}
                         className="hidden"
                       />
-                      <div className={`w-full px-4 py-3 rounded-md transition-colors cursor-pointer ${
+                      <div className={`w-full px-4 py-3 rounded-[6px] transition-colors cursor-pointer border font-medium ${
                         isLoading 
-                          ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-gray-200'
+                          : 'bg-gray-900 text-white hover:bg-gray-800 border-gray-900'
                       }`}>
                         {isLoading ? '验证中...' : '选择项目目录'}
                       </div>
@@ -742,8 +743,8 @@ ${error instanceof Error ? error.message : '未知错误'}
               ) : (
                 <div className="flex-1 flex flex-col overflow-hidden">
                   {/* 项目信息 - 固定在顶部 */}
-                  <div className="border-b border-border p-4 flex-shrink-0">
-                    <h3 className="font-medium mb-1">{selectedProject.projectName}</h3>
+                  <div className="border-b border-gray-700 p-4 flex-shrink-0">
+                    <h3 className="font-medium mb-1 text-gray-200">{selectedProject.projectName}</h3>
                     <div className={`text-sm ${
                       selectedProject.hasValidStructure 
                         ? 'text-green-600' 
@@ -757,11 +758,11 @@ ${error instanceof Error ? error.message : '未知错误'}
                   <div className="flex-1 overflow-y-auto min-h-0">
                     {/* 错误提示 */}
                     {!selectedProject.hasValidStructure && (
-                      <div className="p-4 bg-red-50 border border-red-200 rounded-md mx-4 mb-4">
-                        <h4 className="text-sm font-medium text-red-800 mb-2">
+                      <div className="p-4 bg-red-900/30 border border-red-700 rounded-md mx-4 mb-4">
+                        <h4 className="text-sm font-medium text-red-300 mb-2">
                           缺少必需目录：
                         </h4>
-                        <ul className="text-sm text-red-700 space-y-1">
+                        <ul className="text-sm text-red-400 space-y-1">
                           {selectedProject.missingDirectories.map(dir => (
                             <li key={dir}>• {dir}</li>
                           ))}
@@ -769,7 +770,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                         <div className="mt-3">
                           <button
                             onClick={() => setSelectedProject(null)}
-                            className="text-sm px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors"
+                            className="text-sm px-3 py-1 bg-white border border-gray-300 text-gray-900 rounded-[6px] hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
                           >
                             重新选择
                           </button>
@@ -780,7 +781,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                     {/* 文件树展示 */}
                     {selectedProject.hasValidStructure && selectedProject.fileStructure && (
                       <div className="px-4">
-                        <div className="text-sm font-medium mb-4 text-green-800">
+                        <div className="text-sm font-medium mb-4 text-green-400">
                           🎉 项目加载成功，选择文件开始编辑：
                         </div>
                       
@@ -817,16 +818,16 @@ ${error instanceof Error ? error.message : '未知错误'}
                                 <div 
                                   className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                                     hasFiles 
-                                      ? 'hover:bg-muted/50' 
-                                      : 'text-muted-foreground cursor-not-allowed'
+                                      ? 'hover:bg-gray-800 text-gray-200' 
+                                      : 'text-gray-500 cursor-not-allowed'
                                   }`}
                                   onClick={() => hasFiles && toggleDirectory(dirName)}
                                 >
                                   <span className="text-sm">
                                     {hasFiles ? (isExpanded ? '📂' : '📁') : '📁'}
                                   </span>
-                                  <span className="text-sm font-medium">{dirName}</span>
-                                  <span className="text-xs text-muted-foreground ml-auto">
+                                  <span className="text-sm font-medium text-gray-200">{dirName}</span>
+                                  <span className="text-xs text-gray-400 ml-auto">
                                     {files.length} 文件
                                   </span>
                                 </div>
@@ -839,14 +840,14 @@ ${error instanceof Error ? error.message : '未知错误'}
                                         key={file.path}
                                         className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                                           selectedFile?.path === file.path
-                                            ? 'bg-primary/10 border-l-2 border-primary'
-                                            : 'hover:bg-muted/30'
+                                            ? 'bg-blue-900/50 border-l-2 border-blue-400 text-gray-100'
+                                            : 'hover:bg-gray-800 text-gray-300'
                                         }`}
                                         onClick={() => handleFileClick(file)}
                                       >
                                         <span className="text-sm">{getFileIcon(file.name)}</span>
                                         <span className="text-sm flex-1">{file.name}</span>
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-xs text-gray-400">
                                           {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
                                         </span>
                                       </div>
@@ -860,11 +861,11 @@ ${error instanceof Error ? error.message : '未知错误'}
                       
                       {/* 选中文件提示 */}
                       {selectedFile && (
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                          <div className="text-sm text-blue-800">
+                        <div className="mt-4 p-3 bg-blue-900/30 border border-blue-700 rounded-md">
+                          <div className="text-sm text-blue-300">
                             已选中: <strong>{selectedFile.name}</strong>
                           </div>
-                          <div className="text-xs text-blue-600 mt-1">
+                          <div className="text-xs text-blue-400 mt-1">
                             点击"对话"标签开始AI辅助创作
                           </div>
                         </div>
@@ -939,7 +940,7 @@ ${error instanceof Error ? error.message : '未知错误'}
         </div>
         
         {/* Editor Area */}
-        <div className="flex-1 bg-background">
+        <div className="flex-1" style={{backgroundColor: '#FFFFFF'}}>
           {activeTabId ? (
             (() => {
               const activeTab = openTabs.find(tab => tab.id === activeTabId)
@@ -1003,7 +1004,7 @@ ${error instanceof Error ? error.message : '未知错误'}
               <>
                 <span>{openTabs.find(tab => tab.id === activeTabId)?.language || ''}</span>
                 <button 
-                  className="text-primary hover:underline"
+                  className="text-gray-700 hover:text-gray-900 hover:underline transition-colors"
                   onClick={() => activeTabId && saveFile(activeTabId)}
                 >
                   保存 (Ctrl+S)

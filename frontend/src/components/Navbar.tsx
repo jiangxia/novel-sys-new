@@ -21,34 +21,26 @@ const Navbar = ({ projectName, onImportProject, onShowHelp }: NavbarProps) => {
           <h1 className="text-lg font-medium text-gray-900 hidden sm:block">小说创作系统</h1>
         </div>
         
-        {/* 左侧文字按钮 - 完全模仿md.doocs.org */}
-        <div className="hidden md:flex items-center gap-6">
-          <button 
+        {/* 左侧文字按钮 */}
+        <div className="hidden md:flex items-center">
+          <Button 
+            variant="secondary"
+            size="sm"
             onClick={onImportProject}
-            className="text-base font-normal text-gray-700 hover:text-gray-900 
-                       transition-colors duration-150"
           >
-            文件
-          </button>
-          <button 
-            onClick={onShowHelp}
-            className="text-base font-normal text-gray-700 hover:text-gray-900 
-                       transition-colors duration-150"
-          >
-            帮助
-          </button>
+            导入项目
+          </Button>
         </div>
       </div>
       
       {/* 右侧：保存按钮 */}
       <div className="flex items-center gap-4 flex-shrink-0">
-        <button 
-          className="bg-blue-600 hover:bg-blue-700 text-white 
-                     px-4 py-2 rounded-[6px] font-medium text-sm
-                     transition-colors duration-150"
+        <Button 
+          variant="primary"
+          size="sm"
         >
           保存项目
-        </button>
+        </Button>
       </div>
     </nav>
   )

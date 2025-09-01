@@ -17,6 +17,10 @@ export default {
         },
         blue: {
           500: '#0070f3', 600: '#0070f3', 700: '#0056b3'
+        },
+        v0: {
+          sidebar: '#F8F9FA',
+          editor: '#FFFFFF'
         }
       },
       spacing: {

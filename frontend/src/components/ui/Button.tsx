@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'text';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'text';
   size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
   disabled?: boolean;
@@ -10,9 +10,10 @@ interface ButtonProps {
 
 const Button = ({ variant = 'primary', size = 'md', children, ...props }: ButtonProps) => {
   const variants = {
-    primary: 'bg-gray-900 text-white hover:bg-gray-800 shadow-card',
-    secondary: 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400',
-    text: 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+    primary: 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-900',
+    secondary: 'bg-white border border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400',
+    ghost: 'bg-transparent border border-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+    text: 'bg-transparent border border-transparent text-gray-700 hover:text-gray-900 hover:bg-gray-100'
   }
   
   const sizes = {
@@ -25,8 +26,8 @@ const Button = ({ variant = 'primary', size = 'md', children, ...props }: Button
     <button 
       className={`
         ${variants[variant]} ${sizes[size]}
-        rounded-button font-medium
-        transition-all duration-fast ease-out
+        rounded-[6px] font-medium
+        transition-all duration-150 ease-out
         hover:scale-[1.02] active:scale-[0.98]
         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
       `}
