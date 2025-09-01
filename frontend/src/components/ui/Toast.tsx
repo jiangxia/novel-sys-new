@@ -5,6 +5,7 @@ export interface ToastData {
   message: string;
   type: 'success' | 'error' | 'info';
   duration?: number;
+  position?: 'top-right' | 'center';
 }
 
 interface ToastProps {
@@ -44,12 +45,29 @@ interface ToastContainerProps {
 }
 
 export const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
+  const topRightToasts = toasts.filter(t => t.position === 'top-right');
+  const centerToasts = toasts.filter(t => !t.position || t.position === 'center');
+  
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
-      {toasts.map((toast) => (
-        <Toast key={toast.id} toast={toast} onRemove={onRemove} />
-      ))}
-    </div>
+    <>
+      {/* 右上角Toast */}
+      {topRightToasts.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {topRightToasts.map((toast) => (
+            <Toast key={toast.id} toast={toast} onRemove={onRemove} />
+          ))}
+        </div>
+      )}
+      
+      {/* 顶部居中Toast */}
+      {centerToasts.length > 0 && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2">
+          {centerToasts.map((toast) => (
+            <Toast key={toast.id} toast={toast} onRemove={onRemove} />
+          ))}
+        </div>
+      )}
+    </>
   );
 };
 

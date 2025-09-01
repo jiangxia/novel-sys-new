@@ -4,6 +4,7 @@ interface FileItem {
   type: 'file' | 'directory';
   size?: number;
   file?: File;
+  fileHandle?: any; // 添加文件句柄
 }
 
 interface DirectoryStructure {
@@ -87,7 +88,8 @@ const scanExistingStructure = async (directoryHandle: any) => {
               path: `${directoryHandle.name}/${name}/${fileName}`,
               type: 'file',
               size: file.size,
-              file: file
+              file: file,
+              fileHandle: fileHandle
             });
             allFiles.push(file);
           }
@@ -104,7 +106,8 @@ const scanExistingStructure = async (directoryHandle: any) => {
         path: `${directoryHandle.name}/${name}`,
         type: 'file',
         size: file.size,
-        file: file
+        file: file,
+        fileHandle: handle
       });
       allFiles.push(file);
     }

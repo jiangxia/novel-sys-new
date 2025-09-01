@@ -4,9 +4,10 @@ interface NavbarProps {
   projectName?: string;
   onImportProject?: () => void;
   onShowHelp?: () => void;
+  onSave?: () => void;
 }
 
-const Navbar = ({ projectName, onImportProject, onShowHelp }: NavbarProps) => {
+const Navbar = ({ projectName, onImportProject, onShowHelp, onSave }: NavbarProps) => {
   return (
     <nav className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-50">
       
@@ -38,6 +39,7 @@ const Navbar = ({ projectName, onImportProject, onShowHelp }: NavbarProps) => {
         <Button 
           variant="primary"
           size="sm"
+          onClick={onSave}
         >
           保存项目
         </Button>

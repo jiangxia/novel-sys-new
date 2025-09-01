@@ -9,8 +9,7 @@ import EmojiIcon from './components/EmojiIcon'
 import ProjectView from './components/ProjectView'
 import { ToastContainer } from './components/ui/Toast'
 import { ToastContext, useToastState } from './hooks/useToast'
-import { validateProjectStructure } from './utils/projectImporter'
-import type { ProjectStructure } from './utils/projectImporter'
+import type { ProjectStructure as ImportedProjectStructure } from './utils/projectImporter'
 
 type SidebarTab = 'chat' | 'files'
 
@@ -20,6 +19,7 @@ interface FileItem {
   type: 'file' | 'directory'
   size?: number
   file?: File // 原始File对象，用于读取内容
+  fileHandle?: any // 文件句柄，用于写入
 }
 
 interface DirectoryStructure {
@@ -158,6 +158,7 @@ function App() {
   const [openTabs, setOpenTabs] = useState<EditorTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [fileContents, setFileContents] = useState<FileContent>({})
+  const [fileHandles, setFileHandles] = useState<{[path: string]: any}>({})
   
   // 添加键盘快捷键支持
   useEffect(() => {
@@ -473,23 +474,60 @@ ${error instanceof Error ? error.message : '未知错误'}
     ))
   }
   
-  const saveFile = (tabId: string) => {
+  // 根据路径查找文件对象的辅助函数
+  const findFileByPath = (path: string): FileItem | null => {
+    if (!selectedProject?.fileStructure) return null;
+    
+    for (const dirFiles of Object.values(selectedProject.fileStructure)) {
+      const found = dirFiles.find(file => file.path === path);
+      if (found) return found;
+    }
+    return null;
+  }
+  
+  const saveFile = async (tabId: string) => {
+    console.log('saveFile 被调用, tabId:', tabId);
     const tab = openTabs.find(t => t.id === tabId)
-    if (!tab) return
+    if (!tab) {
+      console.log('未找到标签');
+      return;
+    }
     
-    // 这里模拟保存文件
-    setFileContents(prev => ({
-      ...prev,
-      [tab.path]: tab.content
-    }))
+    console.log('准备保存文件:', tab.name, tab.path);
     
-    setOpenTabs(prev => prev.map(t => 
-      t.id === tabId 
-        ? { ...t, isModified: false }
-        : t
-    ))
-    
-    console.log(`文件 ${tab.name} 已保存`)
+    try {
+      // 查找对应的文件对象，获取文件句柄
+      const fileItem = selectedFile?.path === tab.path ? selectedFile : findFileByPath(tab.path);
+      console.log('找到的文件对象:', fileItem);
+      
+      if (fileItem?.fileHandle) {
+        // 使用File System Access API写入文件
+        const writable = await fileItem.fileHandle.createWritable();
+        await writable.write(tab.content);
+        await writable.close();
+        
+        // 更新内存缓存
+        setFileContents(prev => ({
+          ...prev,
+          [tab.path]: tab.content
+        }))
+        
+        // 标记为未修改
+        setOpenTabs(prev => prev.map(t => 
+          t.id === tabId 
+            ? { ...t, isModified: false }
+            : t
+        ))
+        
+        addToast(`${tab.name} 保存成功`, 'success');
+        console.log(`文件 ${tab.name} 已保存到磁盘`)
+      } else {
+        throw new Error('无法找到文件句柄，请重新选择项目');
+      }
+    } catch (error) {
+      console.error('保存文件失败:', error);
+      addToast(`保存失败：${(error as Error).message}`, 'error');
+    }
   }
   
   return (
@@ -506,6 +544,13 @@ ${error instanceof Error ? error.message : '未知错误'}
           handleDirectorySelect();
         }}
         onShowHelp={() => alert('小说创作系统 - 基于AI的智能写作助手')}
+        onSave={() => {
+          if (activeTabId) {
+            saveFile(activeTabId);
+          } else {
+            addToast('请先打开一个文件', 'info');
+          }
+        }}
       />
       
       {/* 主体区域 - 调整为flex-1 */}

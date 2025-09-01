@@ -142,11 +142,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                     {files.map(file => (
                       <div
                         key={file.path}
-                        className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-                          selectedFile?.path === file.path
-                            ? 'bg-gray-900 text-white'
-                            : 'hover:bg-gray-100 text-gray-700'
-                        }`}
+                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
                         onClick={() => onFileClick(file)}
                       >
                         <EmojiIcon 
@@ -154,7 +150,9 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                           size="sm" 
                           background="gray"
                         />
-                        <span className="text-sm flex-1">{file.name}</span>
+                        <span className={`text-sm flex-1 ${
+                          selectedFile?.path === file.path ? 'font-bold' : ''
+                        }`}>{file.name}</span>
                         <span className="text-xs text-gray-500">
                           {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
                         </span>
@@ -200,11 +198,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                     {files.map(file => (
                       <div
                         key={file.path}
-                        className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-                          selectedFile?.path === file.path
-                            ? 'bg-gray-900 text-white'
-                            : 'hover:bg-gray-100 text-gray-700'
-                        }`}
+                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
                         onClick={() => onFileClick(file)}
                       >
                         <EmojiIcon 
@@ -212,7 +206,9 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                           size="sm" 
                           background="gray"
                         />
-                        <span className="text-sm flex-1">{file.name}</span>
+                        <span className={`text-sm flex-1 ${
+                          selectedFile?.path === file.path ? 'font-bold' : ''
+                        }`}>{file.name}</span>
                         <span className="text-xs text-gray-500">
                           {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
                         </span>
@@ -228,11 +224,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
         {rootFiles.map(file => (
           <div
             key={file.path}
-            className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-              selectedFile?.path === file.path
-                ? 'bg-gray-900 text-white'
-                : 'hover:bg-gray-100 text-gray-700'
-            }`}
+            className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
             onClick={() => onFileClick(file)}
           >
             <EmojiIcon 
@@ -240,7 +232,9 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
               size="sm" 
               background="gray"
             />
-            <span className="text-sm flex-1">{file.name}</span>
+            <span className={`text-sm flex-1 ${
+              selectedFile?.path === file.path ? 'font-bold' : ''
+            }`}>{file.name}</span>
             <span className="text-xs text-gray-500">
               {file.size ? `${Math.round(file.size / 1024)}KB` : ''}
             </span>
