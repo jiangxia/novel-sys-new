@@ -130,7 +130,21 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                 
                 {isExpanded && hasFiles && (
                   <div className="ml-4 space-y-0.5">
-                    {files.map(file => (
+                    {files.sort((a, b) => {
+                      const getLeadingNumber = (name: string) => {
+                        const match = name.match(/^(\d+)/);
+                        return match ? parseInt(match[1], 10) : 999999;
+                      };
+                      
+                      const numA = getLeadingNumber(a.name);
+                      const numB = getLeadingNumber(b.name);
+                      
+                      if (numA === 999999 && numB === 999999) {
+                        return a.name.localeCompare(b.name, 'zh', { numeric: true });
+                      }
+                      
+                      return numA - numB;
+                    }).map(file => (
                       <FileTreeItem
                         key={file.path}
                         file={file}
@@ -175,7 +189,21 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                 
                 {isExpanded && hasFiles && (
                   <div className="ml-4 space-y-0.5">
-                    {files.map(file => (
+                    {files.sort((a, b) => {
+                      const getLeadingNumber = (name: string) => {
+                        const match = name.match(/^(\d+)/);
+                        return match ? parseInt(match[1], 10) : 999999;
+                      };
+                      
+                      const numA = getLeadingNumber(a.name);
+                      const numB = getLeadingNumber(b.name);
+                      
+                      if (numA === 999999 && numB === 999999) {
+                        return a.name.localeCompare(b.name, 'zh', { numeric: true });
+                      }
+                      
+                      return numA - numB;
+                    }).map(file => (
                       <FileTreeItem
                         key={file.path}
                         file={file}
