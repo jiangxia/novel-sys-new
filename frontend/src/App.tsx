@@ -705,7 +705,7 @@ ${error instanceof Error ? error.message : '未知错误'}
                   onChange={(value) => handleEditorChange(value, activeTab.id)}
                   theme="vs-dark"
                   options={{
-                    fontSize: isMobile ? 16 : 20,
+                    fontSize: isMobile ? 12 : 16,
                     fontFamily: 'Monaco, "Fira Code", Consolas, monospace',
                     lineHeight: isMobile ? 24 : 30,
                     wordWrap: 'on',
