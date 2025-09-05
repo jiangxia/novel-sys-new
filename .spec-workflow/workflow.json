@@ -247,9 +247,10 @@
       "id": "phase-3",
       "name": "Gemini大模型集成",
       "description": "配置Gemini API连接，建立大模型调用功能",
-      "status": "planned",
+      "status": "completed",
       "dependencies": ["phase-2.5"],
       "estimatedDuration": "1-2 days",
+      "completedDate": "2025-09-05T09:00:00Z",
       "tasks": [
         {
           "id": "task-3-1",
@@ -262,82 +263,58 @@
         {
           "id": "task-3-2", 
           "title": "Gemini API配置和连接测试",
-          "status": "planned",
+          "status": "completed",
           "priority": "high", 
           "estimatedHours": 3,
-          "description": "配置Gemini API密钥，创建LLM Client，测试大模型调用"
+          "description": "配置Gemini API密钥，创建LLM Client，测试大模型调用",
+          "completedDate": "2025-09-05T08:00:00Z"
         },
         {
           "id": "task-3-3",
           "title": "基础AI对话接口开发",
-          "status": "planned",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 2,
           "dependencies": ["task-3-2"],
-          "description": "实现基础的AI对话API，支持消息发送和响应"
+          "description": "实现基础的AI对话API，支持消息发送和响应",
+          "completedDate": "2025-09-05T09:00:00Z"
         }
       ]
     },
     {
       "id": "phase-4",
-      "name": "MCP基础设施",
-      "description": "搭建MCP协议通信基础架构",
-      "status": "planned",
+      "name": "提示词系统集成",
+      "description": "建立简化的角色提示词加载系统，替代复杂的MCP方案",
+      "status": "in_progress",
       "dependencies": ["phase-3"],
-      "estimatedDuration": "1 day",
+      "estimatedDuration": "0.5 day",
       "tasks": [
         {
           "id": "task-4-1",
-          "title": "MCP SDK集成",
-          "status": "planned",
+          "title": "创建prompts目录结构",
+          "status": "completed",
           "priority": "high",
-          "estimatedHours": 2,
-          "description": "安装MCP SDK，创建基础MCP Client架构"
+          "estimatedHours": 1,
+          "description": "建立roles/和workspaces/文件夹，整理提示词文件",
+          "completedDate": "2025-09-05T10:30:00Z"
         },
         {
           "id": "task-4-2",
-          "title": "MCP连接机制建立", 
+          "title": "实现提示词加载器", 
           "status": "planned",
           "priority": "high",
-          "estimatedHours": 3,
+          "estimatedHours": 2,
           "dependencies": ["task-4-1"],
-          "description": "建立MCP协议通信，验证JSON-RPC 2.0调用"
+          "description": "开发动态读取角色和工作台提示词的加载函数"
         }
       ]
     },
     {
       "id": "phase-5",
-      "name": "PromptX MCP集成",
-      "description": "集成PromptX CLI和MCP Server，实现promptx工具调用",
-      "status": "planned",
-      "dependencies": ["phase-4"],
-      "estimatedDuration": "1-2 days",
-      "tasks": [
-        {
-          "id": "task-5-1",
-          "title": "PromptX CLI安装和配置",
-          "status": "planned",
-          "priority": "high",
-          "estimatedHours": 2,
-          "description": "安装promptx命令行工具，配置MCP Server启动"
-        },
-        {
-          "id": "task-5-2",
-          "title": "PromptX工具验证",
-          "status": "planned",
-          "priority": "high",
-          "estimatedHours": 3,
-          "dependencies": ["task-5-1"],
-          "description": "验证promptx_action等工具可用性，测试MCP调用"
-        }
-      ]
-    },
-    {
-      "id": "phase-6",
       "name": "AI角色系统",
       "description": "实现4个AI角色的激活和切换功能",
       "status": "planned",
-      "dependencies": ["phase-5"],
+      "dependencies": ["phase-4"],
       "estimatedDuration": "1 day",
       "tasks": [
         {
@@ -360,11 +337,11 @@
       ]
     },
     {
-      "id": "phase-7",
+      "id": "phase-6",
       "name": "系统集成与测试",
       "description": "前后端联调，整体测试，MVP完成",
       "status": "planned", 
-      "dependencies": ["phase-6"],
+      "dependencies": ["phase-5"],
       "estimatedDuration": "1 day",
       "tasks": [
         {
@@ -397,12 +374,12 @@
     }
   ],
   "metrics": {
-    "totalTasks": 33,
-    "completedTasks": 14,
-    "inProgressTasks": 0,
-    "pendingTasks": 19,
-    "totalEstimatedHours": 85,
-    "completedHours": 41.5,
-    "remainingHours": 43.5
+    "totalTasks": 25,
+    "completedTasks": 16,
+    "inProgressTasks": 1,
+    "pendingTasks": 8,
+    "totalEstimatedHours": 73,
+    "completedHours": 49.5,
+    "remainingHours": 23.5
   }
 }

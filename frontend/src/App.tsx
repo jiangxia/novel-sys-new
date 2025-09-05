@@ -287,14 +287,15 @@ function App() {
     setIsAILoading(true)
 
     try {
-      // 调用真实的Gemini API
-      const response = await fetch('http://localhost:3002/api/ai/chat', {
+      // 调用角色AI对话API
+      const response = await fetch('http://localhost:3002/api/ai/chat-with-role', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage.content
+          message: userMessage.content,
+          roleId: currentRole.id
         })
       })
 

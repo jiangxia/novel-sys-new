@@ -5,6 +5,7 @@
 
 const https = require('https');
 const { HttpsProxyAgent } = require('https-proxy-agent');
+const promptLoader = require('./promptLoader');
 
 class GeminiService {
   constructor() {
@@ -101,6 +102,54 @@ class GeminiService {
         totalTokens: result.usageMetadata?.totalTokenCount || 'N/A'
       }
     };
+  }
+
+  /**
+   * 使用角色提示词进行对话
+   * @param {string} message - 用户消息
+   * @param {string} roleId - 角色ID (architect, director, planner, writer)
+   * @param {Object} options - 额外选项
+   */
+  async chatWithRole(message, roleId, options = {}) {
+    try {
+      console.log(`Starting chat with role: ${roleId}`);
+      
+      // 加载角色提示词
+      const systemPrompt = await promptLoader.loadRolePrompt(roleId);
+      
+      // 构建对话消息
+      const data = {
+        contents: [{
+          parts: [
+            { text: systemPrompt + '\n\n---\n\n用户消息:\n' + message }
+          ]
+        }],
+        generationConfig: {
+          temperature: options.temperature || 0.9,
+          topK: 1,
+          topP: 1,
+          maxOutputTokens: options.maxTokens || 4096,
+        }
+      };
+
+      const result = await this.makeRequest(data);
+      const text = result.candidates[0].content.parts[0].text;
+
+      return {
+        success: true,
+        message: text.trim(),
+        roleId,
+        timestamp: new Date().toISOString(),
+        tokenUsage: {
+          inputTokens: result.usageMetadata?.promptTokenCount || 'N/A',
+          outputTokens: result.usageMetadata?.candidatesTokenCount || 'N/A',
+          totalTokens: result.usageMetadata?.totalTokenCount || 'N/A'
+        }
+      };
+    } catch (error) {
+      console.error(`Error in chatWithRole for ${roleId}:`, error);
+      throw new Error(`Failed to chat with role ${roleId}: ${error.message}`);
+    }
   }
 
   /**
