@@ -10,6 +10,7 @@ import ProjectView from './components/ProjectView'
 import { ToastContainer } from './components/ui/Toast'
 import { ToastContext, useToastState } from './hooks/useToast'
 import TabDropdown from './components/TabDropdown'
+import MonacoDiffEditor from './components/MonacoDiffEditor'
 import type { ProjectStructure as ImportedProjectStructure } from './utils/projectImporter'
 
 type SidebarTab = 'chat' | 'files'
@@ -58,6 +59,7 @@ interface EditorTab {
   name: string
   path: string
   content: string
+  originalContent: string // 原始内容，用于diff对比
   language: string
   isModified: boolean
 }
@@ -128,6 +130,10 @@ function App() {
   
   // 消息滚动ref
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  
+  // Monaco Diff模式状态
+  const [isDiffMode, setIsDiffMode] = useState(false)
   
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -422,6 +428,7 @@ ${error instanceof Error ? error.message : '未知错误'}
       name: file.name,
       path: file.path,
       content,
+      originalContent: content, // 保存原始内容用于diff对比
       language: getFileLanguage(file.name),
       isModified: false
     }
@@ -474,6 +481,7 @@ ${error instanceof Error ? error.message : '未知错误'}
         : tab
     ))
   }
+
   
   // 根据路径查找文件对象的辅助函数
   const findFileByPath = (path: string): FileItem | null => {
@@ -513,12 +521,15 @@ ${error instanceof Error ? error.message : '未知错误'}
           [tab.path]: tab.content
         }))
         
-        // 标记为未修改
+        // 标记为未修改，并更新原始内容
         setOpenTabs(prev => prev.map(t => 
           t.id === tabId 
-            ? { ...t, isModified: false }
+            ? { ...t, isModified: false, originalContent: t.content }
             : t
         ))
+        
+        // 保存后退出diff模式
+        setIsDiffMode(false)
         
         addToast(`${tab.name} 保存成功`, 'success');
         console.log(`文件 ${tab.name} 已保存到磁盘`)
@@ -789,53 +800,117 @@ ${error instanceof Error ? error.message : '未知错误'}
         </div>
         
         {/* Editor Area */}
-        <div className="flex-1" style={{backgroundColor: '#FFFFFF'}}>
-          {activeTabId ? (
-            (() => {
-              const activeTab = openTabs.find(tab => tab.id === activeTabId)
-              if (!activeTab) return null
-              
-              return (
-                <Editor
-                  height="100%"
-                  language={activeTab.language}
-                  value={activeTab.content}
-                  onChange={(value) => handleEditorChange(value, activeTab.id)}
-                  theme="vs-dark"
-                  options={{
-                    fontSize: isMobile ? 12 : 16,
-                    fontFamily: 'Monaco, "Fira Code", Consolas, monospace',
-                    lineHeight: isMobile ? 24 : 30,
-                    wordWrap: 'on',
-                    minimap: { enabled: !isMobile },
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    tabSize: 2,
-                    insertSpaces: true,
-                    padding: { top: 16, bottom: 16 },
-                    // 移动端优化
-                    folding: !isMobile,
-                    lineNumbers: isMobile ? 'off' : 'on',
-                    glyphMargin: !isMobile,
-                    lineDecorationsWidth: isMobile ? 0 : 10,
-                    lineNumbersMinChars: isMobile ? 0 : 3
-                  }}
-                />
-              )
-            })()
-          ) : (
-            <div className="h-full flex items-center justify-center text-center">
-              <div className="flex flex-col items-center">
-                <div className="mb-6">
-                  <EmojiIcon emoji="📝" size="xl" background="gray" />
+        <div className="flex-1 flex flex-col" style={{backgroundColor: '#FFFFFF'}}>
+          {/* Editor Toolbar */}
+          {activeTabId && (() => {
+            const activeTab = openTabs.find(tab => tab.id === activeTabId)
+            return activeTab ? (
+              <div className="h-12 bg-white border-b border-gray-200 px-4 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-700">编辑模式</span>
+                  <div className="flex bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setIsDiffMode(false)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${!isDiffMode 
+                        ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      普通编辑
+                    </button>
+                    <button
+                      onClick={() => setIsDiffMode(true)}
+                      disabled={!activeTab.isModified}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                        !activeTab.isModified 
+                          ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                          : isDiffMode 
+                            ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-200' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      对比模式
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
-                <p className="text-sm text-muted-foreground">
-                  从左侧选择文件开始编辑
-                </p>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  {activeTab.isModified ? (
+                    <span className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">
+                      已修改
+                    </span>
+                  ) : (
+                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                      未修改
+                    </span>
+                  )}
+                  <span>{activeTab.name}</span>
+                </div>
               </div>
-            </div>
-          )}
+            ) : null
+          })()}
+          
+          <div className="flex-1">
+            {activeTabId ? (
+              (() => {
+                const activeTab = openTabs.find(tab => tab.id === activeTabId)
+                if (!activeTab) return null
+                
+                // 如果是diff模式且文件已修改
+                if (isDiffMode && activeTab.isModified) {
+                  return (
+                    <MonacoDiffEditor
+                      originalContent={activeTab.originalContent}
+                      modifiedContent={activeTab.content}
+                      language={activeTab.language}
+                      onModifiedChange={(value) => handleEditorChange(value, activeTab.id)}
+                      height="100%"
+                    />
+                  )
+                }
+                
+                // 普通编辑模式
+                return (
+                  <Editor
+                    height="100%"
+                    language={activeTab.language}
+                    value={activeTab.content}
+                    onChange={(value) => handleEditorChange(value, activeTab.id)}
+                    theme="vs-dark"
+                    options={{
+                      fontSize: isMobile ? 12 : 16,
+                      fontFamily: 'Monaco, "Fira Code", Consolas, monospace',
+                      lineHeight: isMobile ? 24 : 30,
+                      wordWrap: 'on',
+                      minimap: { enabled: !isMobile },
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                      insertSpaces: true,
+                      padding: { top: 16, bottom: 16 },
+                      // 移动端优化
+                      folding: !isMobile,
+                      lineNumbers: isMobile ? 'off' : 'on',
+                      glyphMargin: !isMobile,
+                      lineDecorationsWidth: isMobile ? 0 : 10,
+                      lineNumbersMinChars: isMobile ? 0 : 3
+                    }}
+                  />
+                )
+              })()
+            ) : (
+              <div className="h-full flex items-center justify-center text-center">
+                <div className="flex flex-col items-center">
+                  <div className="mb-6">
+                    <EmojiIcon emoji="📝" size="xl" background="gray" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
+                  <p className="text-sm text-muted-foreground">
+                    从左侧选择文件开始编辑
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Bottom Status Bar */}
@@ -865,10 +940,11 @@ ${error instanceof Error ? error.message : '未知错误'}
           </div>
         </div>
       </div>
-      </div>
       
       {/* Toast 容器 */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+      
+      </div>
       </div>
     </ToastContext.Provider>
   )

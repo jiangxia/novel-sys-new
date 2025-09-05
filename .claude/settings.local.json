@@ -36,7 +36,10 @@
       "Bash(open http://localhost:3000)",
       "Bash(git add:*)",
       "Bash(git config:*)",
-      "WebFetch(domain:developer.mozilla.org)"
+      "WebFetch(domain:developer.mozilla.org)",
+      "Bash(npm start)",
+      "Bash(grep:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
