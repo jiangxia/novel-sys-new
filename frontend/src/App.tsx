@@ -849,7 +849,7 @@ ${error instanceof Error ? error.message : '未知错误'}
             ) : null
           })()}
           
-          <div className="flex-1">
+          <div className="flex-1" style={{ transition: 'opacity 0.2s ease-in-out' }}>
             {activeTabId ? (
               (() => {
                 const activeTab = openTabs.find(tab => tab.id === activeTabId)

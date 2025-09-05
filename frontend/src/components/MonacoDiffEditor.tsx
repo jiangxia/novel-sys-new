@@ -59,12 +59,6 @@ const MonacoDiffEditor = ({
 
   return (
     <div className="w-full h-full">
-      {isLoading && (
-        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center z-10">
-          <div className="text-gray-300">加载diff编辑器...</div>
-        </div>
-      )}
-      
       <DiffEditor
         height="100%"
         width="100%"
