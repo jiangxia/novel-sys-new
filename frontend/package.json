@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "diff": "^8.0.2",
     "diff2html": "^3.4.52",
+    "monaco-editor": "^0.52.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwind-merge": "^3.3.1"

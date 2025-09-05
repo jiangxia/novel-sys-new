@@ -1,5 +1,6 @@
 import { DiffEditor } from '@monaco-editor/react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import type { editor } from 'monaco-editor';
 
 interface MonacoDiffEditorProps {
   originalContent: string;
@@ -17,10 +18,44 @@ const MonacoDiffEditor = ({
   height = '400px'
 }: MonacoDiffEditorProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const diffEditorRef = useRef<editor.IStandaloneDiffEditor | null>(null);
+  const changeListenerRef = useRef<editor.IDisposable | null>(null);
 
-  const handleEditorDidMount = () => {
+  const handleEditorDidMount = (diffEditor: editor.IStandaloneDiffEditor, monaco: typeof import('monaco-editor')) => {
+    console.log('DiffEditor mounted');
+    diffEditorRef.current = diffEditor;
+    
+    // 获取右侧编辑器（修改后的内容）
+    const modifiedEditor = diffEditor.getModifiedEditor();
+    
+    // 清理之前的监听器
+    if (changeListenerRef.current) {
+      changeListenerRef.current.dispose();
+    }
+    
+    // 监听修改内容的变化
+    changeListenerRef.current = modifiedEditor.onDidChangeModelContent((event) => {
+      console.log('DiffEditor content changed:', event);
+      const currentValue = modifiedEditor.getValue();
+      
+      // 调用回调函数通知内容变化
+      if (onModifiedChange) {
+        onModifiedChange(currentValue);
+      }
+    });
+    
     setIsLoading(false);
+    console.log('DiffEditor change listener attached');
   };
+
+  // 清理监听器
+  useEffect(() => {
+    return () => {
+      if (changeListenerRef.current) {
+        changeListenerRef.current.dispose();
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full h-full">
@@ -37,7 +72,6 @@ const MonacoDiffEditor = ({
         original={originalContent}
         modified={modifiedContent}
         onMount={handleEditorDidMount}
-        onChange={onModifiedChange}
         theme="vs-dark"
         options={{
           readOnly: false,
