@@ -402,9 +402,10 @@
         {
           "id": "task-6.5-1",
           "title": "环境配置标准化",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 3,
+          "completedDate": "2025-09-06T08:52:00Z",
           "description": "基于现有.env文件建立标准化环境配置系统，区分开发和生产环境",
           "acceptance": [
             "扩展backend/.env文件，添加前端相关配置",
@@ -683,20 +684,20 @@
   ],
   "metrics": {
     "totalTasks": 46,
-    "completedTasks": 23,
+    "completedTasks": 24,
     "inProgressTasks": 0, 
-    "pendingTasks": 23,
+    "pendingTasks": 22,
     "totalEstimatedHours": 170,
-    "completedHours": 75.5,
-    "remainingHours": 94.5,
+    "completedHours": 78.5,
+    "remainingHours": 91.5,
     "currentPhase": "phase-6.5",
     "nextMilestone": "轻量级重构完成",
     "refactorPriority": "critical",
     "technicalDebt": {
-      "appTsxLines": 1121,
-      "hardcodedConfigs": 15,
+      "appTsxLines": 1085,
+      "hardcodedConfigs": 3,
       "stateVariables": 21,
-      "riskLevel": "high"
+      "riskLevel": "medium"
     }
   }
 }
