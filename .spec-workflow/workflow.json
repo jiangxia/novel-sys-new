@@ -388,15 +388,195 @@
           "description": "完整用户流程测试和bug修复"
         }
       ]
+    },
+    {
+      "id": "phase-7",
+      "name": "对话驱动修改系统",
+      "description": "实现AI能直接修改Monaco编辑器内容的核心功能",
+      "status": "planned",
+      "dependencies": ["phase-6"],
+      "estimatedDuration": "3-4 days",
+      "tasks": [
+        {
+          "id": "task-8-1",
+          "title": "设计AI修改编辑器的接口协议",
+          "status": "completed",
+          "priority": "high",
+          "estimatedHours": 4,
+          "description": "定义AI返回的修改指令格式，包括插入、删除、替换等操作类型"
+        },
+        {
+          "id": "task-8-2",
+          "title": "前端实现AI修改编辑器内容的功能",
+          "status": "completed",
+          "priority": "high",
+          "estimatedHours": 8,
+          "dependencies": ["task-8-1"],
+          "description": "Monaco编辑器集成AI修改指令解析和执行功能"
+        },
+        {
+          "id": "task-8-3",
+          "title": "后端实现解析AI修改指令的逻辑",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 6,
+          "dependencies": ["task-8-1"],
+          "description": "后端解析AI响应中的修改指令，转换为标准化修改操作"
+        },
+        {
+          "id": "task-8-4",
+          "title": "测试对话驱动修改的完整流程",
+          "status": "planned",
+          "priority": "medium",
+          "estimatedHours": 4,
+          "dependencies": ["task-8-2", "task-8-3"],
+          "description": "端到端测试AI修改文件的完整工作流"
+        }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "name": "AI工作流执行系统",
+      "description": "让AI角色按专业工作流程实际执行创作任务",
+      "status": "planned",
+      "dependencies": ["phase-7"],
+      "estimatedDuration": "4-5 days",
+      "tasks": [
+        {
+          "id": "task-9-1",
+          "title": "实现角色+工作台提示词组装机制",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 4,
+          "description": "优化promptLoader，实现role+workspace智能组装策略"
+        },
+        {
+          "id": "task-9-2",
+          "title": "优化AI角色的工作流执行能力",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 8,
+          "dependencies": ["task-9-1"],
+          "description": "调整提示词策略，让AI能按专业流程执行具体创作任务"
+        },
+        {
+          "id": "task-9-3",
+          "title": "实现AI主动引导用户的对话逻辑",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 6,
+          "dependencies": ["task-9-2"],
+          "description": "AI能主动发起对话，引导用户按创作流程工作"
+        },
+        {
+          "id": "task-9-4",
+          "title": "集成AI任务执行与文件修改流程",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 6,
+          "dependencies": ["task-9-3", "task-8-4"],
+          "description": "整合AI工作流执行和对话驱动修改功能"
+        }
+      ]
+    },
+    {
+      "id": "phase-9",
+      "name": "智能创作引导机制",
+      "description": "AI主动引导用户完成专业创作流程",
+      "status": "planned",
+      "dependencies": ["phase-8"],
+      "estimatedDuration": "3-4 days",
+      "tasks": [
+        {
+          "id": "task-10-1",
+          "title": "实现创作阶段依赖检查逻辑",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 4,
+          "description": "检查前置文件是否完成，智能引导创作顺序"
+        },
+        {
+          "id": "task-10-2",
+          "title": "实现AI主动引导创作流程的对话策略",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 6,
+          "dependencies": ["task-10-1"],
+          "description": "AI能温和引导用户按专业流程完成创作"
+        },
+        {
+          "id": "task-10-3",
+          "title": "实现跨角色协作的智能路由",
+          "status": "planned",
+          "priority": "medium",
+          "estimatedHours": 4,
+          "dependencies": ["task-10-2"],
+          "description": "AI角色间的协作和切换逻辑优化"
+        },
+        {
+          "id": "task-10-4",
+          "title": "完整创作工作流的端到端测试",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 4,
+          "dependencies": ["task-10-3"],
+          "description": "测试从世界观设定到小说内容的完整AI协作流程"
+        }
+      ]
+    },
+    {
+      "id": "phase-10",
+      "name": "MVP功能整合验证",
+      "description": "确保整个AI驱动创作工作流正常运行",
+      "status": "planned",
+      "dependencies": ["phase-9"],
+      "estimatedDuration": "2-3 days",
+      "tasks": [
+        {
+          "id": "task-11-1",
+          "title": "完整创作流程的集成测试",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 4,
+          "description": "验证AI协作创作的完整用户流程"
+        },
+        {
+          "id": "task-11-2",
+          "title": "AI角色协作功能验证",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 3,
+          "dependencies": ["task-11-1"],
+          "description": "验证4个AI角色的协作创作能力"
+        },
+        {
+          "id": "task-11-3",
+          "title": "用户体验优化和bug修复",
+          "status": "planned",
+          "priority": "medium",
+          "estimatedHours": 4,
+          "dependencies": ["task-11-2"],
+          "description": "优化AI驱动创作的用户体验，修复发现的问题"
+        },
+        {
+          "id": "task-11-4",
+          "title": "MVP功能完整性验证",
+          "status": "planned",
+          "priority": "high",
+          "estimatedHours": 2,
+          "dependencies": ["task-11-3"],
+          "description": "最终验证MVP是否达到AI驱动创作工作流的预期目标"
+        }
+      ]
     }
   ],
   "metrics": {
-    "totalTasks": 26,
+    "totalTasks": 42,
     "completedTasks": 19,
     "inProgressTasks": 1,
-    "pendingTasks": 6,
-    "totalEstimatedHours": 74,
+    "pendingTasks": 22,
+    "totalEstimatedHours": 148,
     "completedHours": 53.5,
-    "remainingHours": 20.5
+    "remainingHours": 94.5
   }
 }

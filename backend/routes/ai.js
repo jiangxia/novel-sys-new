@@ -152,6 +152,45 @@ router.post('/chat-with-role', async (req, res) => {
 });
 
 /**
+ * 带文件操作的角色对话接口 (最简实现)
+ * POST /api/ai/chat-with-actions
+ */
+router.post('/chat-with-actions', async (req, res) => {
+  try {
+    const { message, roleId, fileContext = {} } = req.body;
+    
+    // 基础验证
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: '消息内容不能为空'
+      });
+    }
+    
+    if (!roleId) {
+      return res.status(400).json({
+        success: false,
+        message: '角色ID不能为空'
+      });
+    }
+    
+    console.log(`AI文件操作请求 [${roleId}]: ${message.substring(0, 50)}...`);
+    
+    // 调用新的带文件操作的方法
+    const result = await geminiService.chatWithActions(message, roleId, fileContext);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('AI文件操作接口错误:', error);
+    res.status(500).json({
+      success: false,
+      message: 'AI服务暂时不可用，请稍后重试',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
  * 获取可用角色列表
  * GET /api/ai/roles
  */

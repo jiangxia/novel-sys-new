@@ -67,6 +67,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<SidebarTab>('chat')
   const [selectedProject, setSelectedProject] = useState<ProjectStructure | null>(null)
   const [projectDirectoryHandle, setProjectDirectoryHandle] = useState<any>(null)
+  const [projectBasePath, setProjectBasePath] = useState<string>('') // 项目基础路径
   const [isLoading, setIsLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
   
@@ -117,7 +118,35 @@ function App() {
   const [openTabs, setOpenTabs] = useState<EditorTab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [fileContents, setFileContents] = useState<FileContent>({})
-  const [fileHandles, setFileHandles] = useState<{[path: string]: any}>({})
+  const [fileHandles, setFileHandles] = useState<{[relativePath: string]: any}>({})
+  
+  // 路径标准化函数 - 统一路径管理
+  const getFullPath = (relativePath: string): string => {
+    return `${projectBasePath}/${relativePath}`;
+  };
+  
+  const getRelativePath = (fullPath: string): string => {
+    return fullPath.replace(`${projectBasePath}/`, '');
+  };
+  
+  // 权限验证函数
+  const verifyPermission = async (fileHandle: any, readWrite: boolean = true): Promise<boolean> => {
+    try {
+      const options = readWrite ? { mode: 'readwrite' } : {};
+      
+      // 检查现有权限
+      if ((await fileHandle.queryPermission(options)) === 'granted') {
+        return true;
+      }
+      
+      // 请求权限
+      const permission = await fileHandle.requestPermission(options);
+      return permission === 'granted';
+    } catch (error) {
+      console.error('权限验证失败:', error);
+      return false;
+    }
+  };
   
   // 添加键盘快捷键支持
   useEffect(() => {
@@ -148,13 +177,51 @@ function App() {
       const directoryHandle = await (window as any).showDirectoryPicker();
       console.log('用户选择了项目目录:', directoryHandle.name);
       
-      // 保存目录句柄
+      // 保存目录句柄和基础路径
       setProjectDirectoryHandle(directoryHandle);
+      
+      // 构建并保存基础路径 (绝对路径到project-files目录)
+      const basePath = `project-files`; // 简化：直接使用project-files作为基础路径标识
+      setProjectBasePath(basePath);
+      console.log('项目基础路径设置为:', basePath);
+      
+      // 请求项目目录的写权限
+      try {
+        const hasWritePermission = await verifyPermission(directoryHandle, true);
+        if (!hasWritePermission) {
+          console.warn('未获取项目写权限，文件操作可能受限');
+        } else {
+          console.log('✅ 项目写权限已获取');
+        }
+      } catch (error) {
+        console.warn('权限检查失败:', error);
+      }
       
       // 使用统一的扫描方法
       const { scanProjectDirectory } = await import('./utils/directoryScanner');
       const structure = await scanProjectDirectory(directoryHandle);
       setSelectedProject(structure);
+      
+      // 从扫描结果中提取并保存所有文件句柄 - 使用相对路径作为key
+      if (structure.fileStructure) {
+        const handles: {[relativePath: string]: any} = {};
+        
+        Object.entries(structure.fileStructure).forEach(([dirName, files]) => {
+          files.forEach(file => {
+            if (file.fileHandle && file.path) {
+              // 提取相对路径 (去掉项目名前缀)
+              const pathParts = file.path.split('/');
+              const relativePath = pathParts.slice(1).join('/'); // 去掉第一部分(项目名)
+              
+              handles[relativePath] = file.fileHandle;
+              console.log('保存文件句柄:', relativePath, '→', file.fileHandle.name);
+            }
+          });
+        });
+        
+        setFileHandles(handles);
+        console.log('所有文件句柄已保存 (相对路径):', Object.keys(handles));
+      }
       
       console.log('项目导入完成:', structure);
     } catch (error) {
@@ -239,16 +306,27 @@ function App() {
     setIsAILoading(true)
 
     try {
-      // 调用角色AI对话API
-      const response = await fetch('http://localhost:3002/api/ai/chat-with-role', {
+      const requestData = {
+        message: userMessage.content,
+        roleId: currentRole.id,
+        fileContext: {
+          currentFile: selectedFile?.path, // "0-小说设定/world.md"
+          currentFileName: selectedFile?.name, // "world.md"
+          currentFileContent: activeTabId ? openTabs.find(tab => tab.id === activeTabId)?.content : '',
+          selectedFiles: openTabs.map(tab => tab.path)
+        }
+      };
+      
+      console.log('=== DEBUG: 前端发送的请求数据 ===');
+      console.log('requestData:', JSON.stringify(requestData, null, 2));
+      
+      // 调用带文件操作的AI对话API
+      const response = await fetch('http://localhost:3002/api/ai/chat-with-actions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: userMessage.content,
-          roleId: currentRole.id
-        })
+        body: JSON.stringify(requestData)
       })
 
       if (!response.ok) {
@@ -258,14 +336,35 @@ function App() {
       const result = await response.json()
 
       if (result.success) {
+        // 添加AI回复消息
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: result.data.aiResponse,
+          content: result.data.userMessage,
           timestamp: Date.now(),
           roleId: currentRole.id
         }
         setChatMessages(prev => [...prev, aiMessage])
+
+        // 前端直接执行文件操作（新方案）
+        if (result.data.systemActions && result.data.systemActions.length > 0) {
+          console.log('前端执行文件操作:', result.data.systemActions)
+          
+          let successCount = 0;
+          for (const action of result.data.systemActions) {
+            try {
+              await executeFileAction(action);
+              successCount++;
+            } catch (error) {
+              console.error('文件操作失败:', action, error);
+              addToast(`文件操作失败: ${action.path}`, 'error');
+            }
+          }
+          
+          if (successCount > 0) {
+            addToast(`文件操作完成：${successCount}个操作`, 'success');
+          }
+        }
       } else {
         throw new Error(result.message || 'AI响应失败')
       }
@@ -408,6 +507,126 @@ ${error instanceof Error ? error.message : '未知错误'}
       reader.readAsText(file, 'utf-8')
     })
   }
+
+  // 路径标准化函数
+  const normalizeFilePath = (aiPath: string): string => {
+    // AI返回标准相对路径，但fileHandles中可能有project-files前缀
+    // 尝试多种路径格式匹配
+    const possiblePaths = [
+      aiPath,                                    // "0-小说设定/world.md"
+      `project-files/${aiPath}`,                 // "project-files/0-小说设定/world.md"
+      aiPath.replace(/^project-files\//, ''),    // 去掉可能的前缀
+    ];
+    
+    for (const possiblePath of possiblePaths) {
+      if (fileHandles[possiblePath]) {
+        console.log(`路径匹配成功: ${aiPath} -> ${possiblePath}`);
+        return possiblePath;
+      }
+    }
+    
+    console.log('路径匹配失败，尝试的路径:', possiblePaths);
+    return aiPath; // 找不到就返回原路径
+  };
+
+  // 前端直接执行文件操作（核心函数）
+  const executeFileAction = async (action: any) => {
+    const { type, path, content } = action;
+    console.log('=== DEBUG: executeFileAction ===');
+    console.log('action:', JSON.stringify(action, null, 2));
+    console.log('当前fileHandles keys (相对路径):', Object.keys(fileHandles));
+    console.log(`执行文件操作: ${type} - ${path}`);
+
+    // AI返回的path就是标准相对路径，直接使用
+    const relativePath = path; // AI返回："0-小说设定/world.md"
+    console.log(`使用相对路径: ${relativePath}`);
+    
+    switch (type) {
+      case 'MODIFY_FILE':
+        // 修改现有文件
+        const existingHandle = fileHandles[relativePath];
+        if (!existingHandle) {
+          throw new Error(`文件不存在: ${relativePath}。可用文件: ${Object.keys(fileHandles).join(', ')}`);
+        }
+        
+        // 验证权限
+        const hasPermission = await verifyPermission(existingHandle, true);
+        if (!hasPermission) {
+          throw new Error(`没有文件写权限: ${relativePath}`);
+        }
+        
+        // 写入文件
+        const writable = await existingHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        
+        // 更新编辑器内容 - 使用完整路径匹配openTabs
+        const fullPath = getFullPath(relativePath); // "project-files/0-小说设定/world.md"
+        updateEditorContent(fullPath, content);
+        
+        console.log(`✅ 文件修改成功: ${relativePath}`);
+        break;
+        
+      case 'CREATE_FILE':
+        if (!projectDirectoryHandle) {
+          throw new Error('项目目录句柄不存在');
+        }
+        
+        const pathParts = relativePath.split('/');
+        const fileName = pathParts.pop()!;
+        
+        if (fileHandles[relativePath]) {
+          // 文件已存在，修改内容
+          const existingFileHandle = fileHandles[relativePath];
+          
+          // 验证权限
+          const hasExistingPermission = await verifyPermission(existingFileHandle, true);
+          if (!hasExistingPermission) {
+            throw new Error(`没有文件写权限: ${relativePath}`);
+          }
+          
+          const existingWritable = await existingFileHandle.createWritable();
+          await existingWritable.write(content);
+          await existingWritable.close();
+          
+          addToast(`文件已更新: ${fileName}`, 'success');
+        } else {
+          // 创建新文件
+          let dirHandle = projectDirectoryHandle;
+          for (const dir of pathParts) {
+            dirHandle = await dirHandle.getDirectoryHandle(dir, { create: true });
+          }
+          
+          const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+          const newWritable = await fileHandle.createWritable();
+          await newWritable.write(content);
+          await newWritable.close();
+          
+          // 保存文件句柄 - 使用相对路径作为key
+          setFileHandles(prev => ({ ...prev, [relativePath]: fileHandle }));
+          
+          addToast(`新文件已创建: ${fileName}`, 'success');
+        }
+        
+        console.log(`✅ 文件创建成功: ${relativePath}`);
+        break;
+        
+      default:
+        throw new Error(`不支持的操作类型: ${type}`);
+    }
+  };
+
+  // 更新编辑器内容的辅助函数
+  const updateEditorContent = (path: string, newContent: string) => {
+    setOpenTabs(prev => prev.map(tab => 
+      tab.path === path 
+        ? { ...tab, content: newContent, isModified: false, originalContent: newContent }
+        : tab
+    ));
+    
+    // 更新文件缓存
+    setFileContents(prev => ({ ...prev, [path]: newContent }));
+  };
   
   
   const closeTab = (tabId: string) => {
@@ -634,6 +853,27 @@ ${error instanceof Error ? error.message : '未知错误'}
                     const { scanProjectDirectory } = await import('./utils/directoryScanner');
                     const refreshedProject = await scanProjectDirectory(projectDirectoryHandle);
                     setSelectedProject(refreshedProject);
+                    
+                    // 更新文件句柄 - 使用相对路径
+                    if (refreshedProject.fileStructure) {
+                      const handles: {[relativePath: string]: any} = {};
+                      
+                      Object.entries(refreshedProject.fileStructure).forEach(([dirName, files]) => {
+                        files.forEach(file => {
+                          if (file.fileHandle && file.path) {
+                            // 提取相对路径 (去掉项目名前缀)
+                            const pathParts = file.path.split('/');
+                            const relativePath = pathParts.slice(1).join('/'); // 去掉第一部分(项目名)
+                            
+                            handles[relativePath] = file.fileHandle;
+                          }
+                        });
+                      });
+                      
+                      setFileHandles(handles);
+                      console.log('刷新后文件句柄已更新 (相对路径):', Object.keys(handles));
+                    }
+                    
                     addToast('项目文件已刷新', 'success');
                   } catch (error) {
                     console.error('刷新项目失败:', error);

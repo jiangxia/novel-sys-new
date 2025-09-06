@@ -6,6 +6,8 @@
 const https = require('https');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const promptLoader = require('./promptLoader');
+const fs = require('fs').promises;
+const path = require('path');
 
 class GeminiService {
   constructor() {
@@ -182,6 +184,101 @@ class GeminiService {
         error: error.message,
         timestamp: new Date().toISOString()
       };
+    }
+  }
+
+  /**
+   * 带文件操作的角色对话 (最简实现)
+   */
+  async chatWithActions(message, roleId, fileContext = {}) {
+    try {
+      console.log('=== DEBUG: chatWithActions 收到的参数 ===');
+      console.log('message:', message);
+      console.log('roleId:', roleId);
+      console.log('fileContext:', JSON.stringify(fileContext, null, 2));
+      
+      // 1. 读取系统提示词
+      const systemPromptPath = path.join(__dirname, '../../prompts/system/file-operations.md');
+      const systemPrompt = await fs.readFile(systemPromptPath, 'utf8');
+      
+      // 2. 加载角色提示词
+      const rolePrompt = await promptLoader.loadRolePrompt(roleId);
+      
+      // 3. 构建文件上下文信息
+      let fileContextStr = '';
+      if (fileContext.currentFile) {
+        fileContextStr = `
+当前编辑文件: ${fileContext.currentFile}
+当前文件名: ${fileContext.currentFileName}
+当前文件内容:
+\`\`\`
+${fileContext.currentFileContent || '(空文件)'}
+\`\`\`
+`;
+      }
+      
+      // 4. 构建完整提示词
+      const fullPrompt = `${systemPrompt}
+      
+${fileContextStr}
+
+---
+
+${rolePrompt}
+
+---
+
+用户消息: ${message}`;
+      
+      // 5. 调用 Gemini
+      const data = {
+        contents: [{
+          parts: [{ text: fullPrompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 1,
+          topP: 1,
+          maxOutputTokens: 4096,
+        }
+      };
+
+      const result = await this.makeRequest(data);
+      const responseText = result.candidates[0].content.parts[0].text.trim();
+      
+      console.log('=== DEBUG: AI原始响应 ===');
+      console.log('responseText:', responseText);
+      
+      // 5. 解析JSON响应
+      let parsedResponse;
+      try {
+        // 尝试提取JSON（可能被markdown包装）
+        const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/) || 
+                         responseText.match(/```\s*([\s\S]*?)\s*```/) ||
+                         [null, responseText];
+        const jsonStr = jsonMatch[1] || responseText;
+        parsedResponse = JSON.parse(jsonStr);
+      } catch (parseError) {
+        // 如果解析失败，返回纯文本响应
+        parsedResponse = {
+          userMessage: responseText,
+          systemActions: []
+        };
+      }
+      
+      console.log('=== DEBUG: 解析后的响应 ===');
+      console.log('parsedResponse:', JSON.stringify(parsedResponse, null, 2));
+      
+      return {
+        success: true,
+        data: parsedResponse,
+        roleId,
+        timestamp: new Date().toISOString()
+      };
+      
+    } catch (error) {
+      console.error(`Error in chatWithActions for ${roleId}:`, error);
+      throw new Error(`Failed to chat with actions: ${error.message}`);
     }
   }
 
