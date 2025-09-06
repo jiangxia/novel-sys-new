@@ -198,7 +198,7 @@ class GeminiService {
       console.log('fileContext:', JSON.stringify(fileContext, null, 2));
       
       // 1. 读取系统提示词
-      const systemPromptPath = path.join(__dirname, '../../prompts/system/file-operations.md');
+      const systemPromptPath = path.join(__dirname, '../prompts/system/file-operations.md');
       const systemPrompt = await fs.readFile(systemPromptPath, 'utf8');
       
       // 2. 加载角色提示词
