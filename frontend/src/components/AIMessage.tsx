@@ -28,7 +28,7 @@ const AIMessage = ({ content, role, timestamp }: AIMessageProps) => {
               h3: ({ children }) => <h3 className="text-sm font-bold mb-1 text-gray-900">{children}</h3>,
               
               // 自定义段落样式
-              p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-800">{children}</p>,
+              p: ({ children }) => <p className="mb-2 last:mb-0 text-base text-gray-800">{children}</p>,
               
               // 自定义列表样式
               ul: ({ children }) => <ul className="list-disc pl-4 mb-2 text-gray-800">{children}</ul>,

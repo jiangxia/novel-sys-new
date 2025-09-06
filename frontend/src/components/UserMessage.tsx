@@ -15,7 +15,7 @@ const UserMessage = ({ content, timestamp }: UserMessageProps) => {
       
       {/* 消息内容占据完整宽度 */}
       <div className="rounded-lg p-4 mx-4" style={{ backgroundColor: '#EBEBEB' }}>
-        <div className="text-sm text-gray-800 whitespace-pre-wrap">{content}</div>
+        <div className="text-base text-gray-800 whitespace-pre-wrap">{content}</div>
       </div>
       
       {/* 时间显示在下方 - 右对齐 */}
