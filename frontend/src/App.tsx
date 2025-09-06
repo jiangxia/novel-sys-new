@@ -11,56 +11,15 @@ import { ToastContainer } from './components/ui/Toast'
 import { ToastContext, useToastState } from './hooks/useToast'
 import TabDropdown from './components/TabDropdown'
 import MonacoDiffEditor from './components/MonacoDiffEditor'
-import type { ProjectStructure as ImportedProjectStructure } from './utils/projectImporter'
-import type { AIRole, ChatMessage, FileItem, EditorTab, SidebarTab, DirectoryStructure, ProjectStructure } from './types'
+import type { AIRole, ChatMessage, FileItem, EditorTab, SidebarTab, ProjectStructure } from './types'
 
-
+// 导入配置
+import config from './config'
+import aiRoles from './config/aiRoles'
 
 interface FileContent {
   [key: string]: string
 }
-
-const requiredDirectories = [
-  '0-小说设定',
-  '1-故事大纲', 
-  '2-故事概要',
-  '3-小说内容'
-]
-
-const aiRoles: AIRole[] = [
-  {
-    id: 'architect',
-    name: '架构师',
-    description: '世界观构建专家',
-    avatar: '架',
-    color: '#3b82f6',
-    targetDirectories: ['0-小说设定']
-  },
-  {
-    id: 'planner',
-    name: '规划师', 
-    description: '故事结构规划师',
-    avatar: '规',
-    color: '#10b981',
-    targetDirectories: ['1-故事大纲', '2-故事概要']
-  },
-  {
-    id: 'writer',
-    name: '写手',
-    description: '内容创作专家', 
-    avatar: '写',
-    color: '#8b5cf6',
-    targetDirectories: ['3-小说内容']
-  },
-  {
-    id: 'director',
-    name: '总监',
-    description: '全局统筹专家',
-    avatar: '监',
-    color: '#f97316',
-    targetDirectories: []
-  }
-]
 
 function App() {
   const { toasts, addToast, removeToast } = useToastState()
@@ -321,7 +280,7 @@ function App() {
       console.log('requestData:', JSON.stringify(requestData, null, 2));
       
       // 调用带文件操作的AI对话API
-      const response = await fetch('http://localhost:3002/api/ai/chat-with-actions', {
+      const response = await fetch(`${config.API_BASE_URL}/api/ai/chat-with-actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

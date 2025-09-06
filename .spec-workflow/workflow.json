@@ -390,12 +390,119 @@
       ]
     },
     {
+      "id": "phase-6.5",
+      "name": "轻量级重构 - 技术债务清理",
+      "description": "在继续新功能开发前，对现有代码进行轻量级重构，解决技术债务",
+      "status": "pending",
+      "dependencies": ["phase-6"],
+      "estimatedDuration": "1.5 days",
+      "priority": "critical",
+      "justification": "App.tsx已达1121行，存在严重技术债务，必须在功能继续扩展前进行重构",
+      "tasks": [
+        {
+          "id": "task-6.5-1",
+          "title": "环境配置标准化",
+          "status": "pending",
+          "priority": "high",
+          "estimatedHours": 3,
+          "description": "基于现有.env文件建立标准化环境配置系统，区分开发和生产环境",
+          "acceptance": [
+            "扩展backend/.env文件，添加前端相关配置",
+            "创建.env.production生产环境配置文件",
+            "前端添加VITE_环境变量支持",
+            "AI角色配置从App.tsx移至环境变量或配置文件",
+            "API端口等硬编码改用process.env/import.meta.env",
+            "消除App.tsx中所有硬编码配置项"
+          ],
+          "files": [
+            "backend/.env",
+            "backend/.env.production", 
+            "frontend/.env.local",
+            "frontend/src/config/index.ts",
+            "frontend/src/config/aiRoles.ts",
+            "frontend/src/config/directories.ts"
+          ],
+          "envVariables": [
+            "VITE_API_BASE_URL",
+            "VITE_APP_NAME", 
+            "VITE_DEBUG_MODE",
+            "VITE_ENABLE_FILE_OPERATIONS",
+            "VITE_ENABLE_AI_DEBUG"
+          ]
+        },
+        {
+          "id": "task-6.5-2", 
+          "title": "状态管理抽取重构",
+          "status": "pending",
+          "priority": "high",
+          "estimatedHours": 4,
+          "dependencies": ["task-6.5-1"],
+          "description": "将App.tsx中的21个useState重构为逻辑分组的自定义hooks",
+          "acceptance": [
+            "创建useProjectState管理项目相关状态",
+            "创建useEditorState管理编辑器相关状态",
+            "创建useChatState管理对话相关状态",
+            "创建useFileOperation管理文件操作状态",
+            "App.tsx状态变量减少至5个以下"
+          ],
+          "files": [
+            "frontend/src/hooks/useProjectState.ts",
+            "frontend/src/hooks/useEditorState.ts", 
+            "frontend/src/hooks/useChatState.ts",
+            "frontend/src/hooks/useFileOperation.ts"
+          ]
+        },
+        {
+          "id": "task-6.5-3",
+          "title": "文件操作服务抽取",
+          "status": "pending",
+          "priority": "high",
+          "estimatedHours": 6,
+          "dependencies": ["task-6.5-2"],
+          "description": "将文件操作逻辑从App.tsx抽取到独立服务层，提升可维护性",
+          "acceptance": [
+            "创建FileService类处理所有文件CRUD操作",
+            "创建PermissionService处理文件权限管理",
+            "executeFileAction等函数完全移出App.tsx",
+            "App.tsx中文件操作相关代码减少80%以上",
+            "文件操作逻辑可独立测试"
+          ],
+          "files": [
+            "frontend/src/services/FileService.ts",
+            "frontend/src/services/PermissionService.ts",
+            "frontend/src/types/FileOperation.ts"
+          ]
+        },
+        {
+          "id": "task-6.5-4",
+          "title": "App.tsx组件拆分",
+          "status": "pending", 
+          "priority": "high",
+          "estimatedHours": 3,
+          "dependencies": ["task-6.5-3"],
+          "description": "将App.tsx拆分为逻辑清晰的子组件，提升可维护性",
+          "acceptance": [
+            "App.tsx行数从1121行减少至400行以下",
+            "创建ChatPanel、EditorPanel、FilePanel等子组件",
+            "App.tsx只负责顶层状态管理和路由", 
+            "组件职责单一，逻辑清晰"
+          ],
+          "files": [
+            "frontend/src/components/ChatPanel.tsx",
+            "frontend/src/components/EditorPanel.tsx",
+            "frontend/src/components/FilePanel.tsx"
+          ]
+        }
+      ]
+    },
+    {
       "id": "phase-7",
       "name": "对话驱动修改系统",
       "description": "实现AI能直接修改Monaco编辑器内容的核心功能",
-      "status": "planned",
-      "dependencies": ["phase-6"],
+      "status": "completed",
+      "dependencies": ["phase-6.5"],
       "estimatedDuration": "3-4 days",
+      "completedDate": "2025-09-06T16:00:00Z",
       "tasks": [
         {
           "id": "task-8-1",
@@ -403,6 +510,7 @@
           "status": "completed",
           "priority": "high",
           "estimatedHours": 4,
+          "completedDate": "2025-09-06T08:00:00Z",
           "description": "定义AI返回的修改指令格式，包括插入、删除、替换等操作类型"
         },
         {
@@ -412,24 +520,27 @@
           "priority": "high",
           "estimatedHours": 8,
           "dependencies": ["task-8-1"],
+          "completedDate": "2025-09-06T14:00:00Z",
           "description": "Monaco编辑器集成AI修改指令解析和执行功能"
         },
         {
           "id": "task-8-3",
           "title": "后端实现解析AI修改指令的逻辑",
-          "status": "planned",
+          "status": "completed",
           "priority": "high",
           "estimatedHours": 6,
           "dependencies": ["task-8-1"],
+          "completedDate": "2025-09-06T15:00:00Z",
           "description": "后端解析AI响应中的修改指令，转换为标准化修改操作"
         },
         {
           "id": "task-8-4",
           "title": "测试对话驱动修改的完整流程",
-          "status": "planned",
+          "status": "completed",
           "priority": "medium",
           "estimatedHours": 4,
           "dependencies": ["task-8-2", "task-8-3"],
+          "completedDate": "2025-09-06T16:00:00Z",
           "description": "端到端测试AI修改文件的完整工作流"
         }
       ]
@@ -571,12 +682,21 @@
     }
   ],
   "metrics": {
-    "totalTasks": 42,
-    "completedTasks": 19,
-    "inProgressTasks": 1,
-    "pendingTasks": 22,
-    "totalEstimatedHours": 148,
-    "completedHours": 53.5,
-    "remainingHours": 94.5
+    "totalTasks": 46,
+    "completedTasks": 23,
+    "inProgressTasks": 0, 
+    "pendingTasks": 23,
+    "totalEstimatedHours": 170,
+    "completedHours": 75.5,
+    "remainingHours": 94.5,
+    "currentPhase": "phase-6.5",
+    "nextMilestone": "轻量级重构完成",
+    "refactorPriority": "critical",
+    "technicalDebt": {
+      "appTsxLines": 1121,
+      "hardcodedConfigs": 15,
+      "stateVariables": 21,
+      "riskLevel": "high"
+    }
   }
 }
