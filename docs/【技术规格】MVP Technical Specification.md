@@ -4,9 +4,13 @@
 
 ### 1.1 技术架构
 ```
-用户浏览器(React SPA) ←→ Node.js后端API ←→ PromptX MCP Server ←→ AI角色系统
-                                    ↓
-                               本地文件系统
+用户浏览器(React SPA) ←→ Node.js后端API ←→ Gemini API (直接调用)
+      ↑                           ↓
+File System Access API     PromptLoader服务
+      ↓                           ↓  
+   本地文件系统              角色提示词文件
+
+注：PromptX MCP集成作为后续扩展保留，当前使用直接API调用方式
 ```
 
 ### 1.2 核心技术栈
