@@ -2,67 +2,19 @@
 import { useState, useRef, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import Navbar from './components/Navbar'
-import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
+import MessageList from './components/MessageList'
 import RoleAvatar from './components/RoleAvatar'
-import EmojiIcon from './components/EmojiIcon'
+import SimpleIcon from './components/SimpleIcon'
 import ProjectView from './components/ProjectView'
 import { ToastContainer } from './components/ui/Toast'
 import { ToastContext, useToastState } from './hooks/useToast'
 import TabDropdown from './components/TabDropdown'
 import MonacoDiffEditor from './components/MonacoDiffEditor'
 import type { ProjectStructure as ImportedProjectStructure } from './utils/projectImporter'
+import type { AIRole, ChatMessage, FileItem, EditorTab, SidebarTab, DirectoryStructure, ProjectStructure } from './types'
 
-type SidebarTab = 'chat' | 'files'
 
-interface FileItem {
-  name: string
-  path: string
-  type: 'file' | 'directory'
-  size?: number
-  file?: File // 原始File对象，用于读取内容
-  fileHandle?: any // 文件句柄，用于写入
-}
-
-interface DirectoryStructure {
-  [key: string]: FileItem[]
-}
-
-interface ProjectStructure {
-  hasValidStructure: boolean
-  directories: string[]
-  missingDirectories: string[]
-  projectName: string
-  fileStructure?: DirectoryStructure
-  allFiles?: FileList
-}
-
-interface AIRole {
-  id: string
-  name: string
-  description: string
-  avatar: string
-  color: string
-  targetDirectories: string[]
-}
-
-interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: number
-  roleId?: string
-}
-
-interface EditorTab {
-  id: string
-  name: string
-  path: string
-  content: string
-  originalContent: string // 原始内容，用于diff对比
-  language: string
-  isModified: boolean
-}
 
 interface FileContent {
   [key: string]: string
@@ -81,7 +33,7 @@ const aiRoles: AIRole[] = [
     name: '架构师',
     description: '世界观构建专家',
     avatar: '架',
-    color: 'bg-blue-500',
+    color: '#3b82f6',
     targetDirectories: ['0-小说设定']
   },
   {
@@ -89,7 +41,7 @@ const aiRoles: AIRole[] = [
     name: '规划师', 
     description: '故事结构规划师',
     avatar: '规',
-    color: 'bg-green-500',
+    color: '#10b981',
     targetDirectories: ['1-故事大纲', '2-故事概要']
   },
   {
@@ -97,7 +49,7 @@ const aiRoles: AIRole[] = [
     name: '写手',
     description: '内容创作专家', 
     avatar: '写',
-    color: 'bg-purple-500',
+    color: '#8b5cf6',
     targetDirectories: ['3-小说内容']
   },
   {
@@ -105,7 +57,7 @@ const aiRoles: AIRole[] = [
     name: '总监',
     description: '全局统筹专家',
     avatar: '监',
-    color: 'bg-orange-500',
+    color: '#f97316',
     targetDirectories: []
   }
 ]
@@ -545,7 +497,7 @@ ${error instanceof Error ? error.message : '未知错误'}
   
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
-      <div className="h-screen flex flex-col bg-gray-50 text-gray-900 relative">
+      <div className="h-screen flex flex-col text-gray-900 relative" style={{ backgroundColor: '#FAFAFA' }}>
       
       {/* 导航栏 - 新增 */}
       <Navbar 
@@ -630,52 +582,28 @@ ${error instanceof Error ? error.message : '未知错误'}
                 </div>
               </div>
               
-              {/* Messages Area - 可滚动区域 */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 min-h-0">
-                {chatMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className="mb-4">
-                      <RoleAvatar role={currentRole} size="lg" isActive={true} />
-                    </div>
-                    <div className="text-lg font-medium mb-2 text-gray-800">{currentRole.name}</div>
-                    <div className="text-sm text-gray-400 mb-4">{currentRole.description}</div>
-                    <div className="text-sm text-gray-400">
-                      {selectedFile 
-                        ? `我可以帮您处理"${selectedFile.name}"文件的相关内容` 
-                        : '选择文件或直接开始对话吧！'}
-                    </div>
+              {/* Messages Area - 使用新的MessageList组件 */}
+              {chatMessages.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                  <div className="mb-4">
+                    <RoleAvatar role={currentRole} size="lg" isActive={true} />
                   </div>
-                ) : (
-                  chatMessages.map(message => (
-                    <ChatMessage 
-                      key={message.id} 
-                      message={message} 
-                      roles={aiRoles}
-                    />
-                  ))
-                )}
-                
-                {/* AI加载状态 */}
-                {isAILoading && (
-                  <div className="flex gap-3">
-                    <div className="mt-1 flex-shrink-0">
-                      <RoleAvatar role={currentRole} size="sm" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="bg-gray-100 rounded-lg p-3 text-sm border border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                          <span className="text-gray-600 text-xs ml-2">{currentRole.name}正在思考...</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="text-lg font-medium mb-2 text-gray-800">{currentRole.name}</div>
+                  <div className="text-sm text-gray-400 mb-4">{currentRole.description}</div>
+                  <div className="text-sm text-gray-400">
+                    {selectedFile 
+                      ? `我可以帮您处理"${selectedFile.name}"文件的相关内容` 
+                      : '选择文件或直接开始对话吧！'}
                   </div>
-                )}
-                {/* 滚动锚点 */}
-                <div ref={messagesEndRef} />
-              </div>
+                </div>
+              ) : (
+                <MessageList 
+                  messages={chatMessages}
+                  aiRoles={aiRoles}
+                  isLoading={isAILoading}
+                />
+              )}
+              
               
               {/* 新的ChatInput组件 */}
               <ChatInput
@@ -902,7 +830,7 @@ ${error instanceof Error ? error.message : '未知错误'}
               <div className="h-full flex items-center justify-center text-center">
                 <div className="flex flex-col items-center">
                   <div className="mb-6">
-                    <EmojiIcon emoji="📝" size="xl" background="gray" />
+                    <SimpleIcon type="file" size="xl" background="gray" />
                   </div>
                   <h3 className="text-lg font-medium mb-2">Monaco 编辑器</h3>
                   <p className="text-sm text-muted-foreground">

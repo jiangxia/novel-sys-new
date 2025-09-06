@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import FileTree from './FileTree';
-import EmojiIcon from './EmojiIcon';
+import SimpleIcon from './SimpleIcon';
 import { Button } from './ui';
 import { scanProjectDirectory } from '../utils/directoryScanner';
 import { useToast } from '../hooks/useToast';
@@ -69,7 +69,7 @@ const ProjectView = ({
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <div className="mb-6">
-          <EmojiIcon emoji="📁" size="xl" background="gray" />
+          <SimpleIcon type="folder" size="xl" background="gray" />
         </div>
         <h3 className="text-lg font-medium mb-2">项目文件管理</h3>
         <p className="text-sm text-muted-foreground mb-6">

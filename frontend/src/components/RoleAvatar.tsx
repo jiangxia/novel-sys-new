@@ -1,11 +1,4 @@
-interface AIRole {
-  id: string;
-  name: string;
-  description: string;
-  avatar: string;
-  color: string;
-  targetDirectories: string[];
-}
+import type { AIRole } from '../types';
 
 interface RoleAvatarProps {
   role: AIRole;
@@ -22,9 +15,9 @@ const RoleAvatar = ({ role, size = 'md', isActive = false }: RoleAvatarProps) =>
   }
   
   const sizes = {
-    sm: 'w-8 h-8 text-xs',
-    md: 'w-10 h-10 text-sm',
-    lg: 'w-12 h-12 text-base'
+    sm: 'w-6 h-6 text-xs',
+    md: 'w-8 h-8 text-sm', 
+    lg: 'w-10 h-10 text-base'
   }
   
   return (

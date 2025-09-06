@@ -1,4 +1,4 @@
-import EmojiIcon from './EmojiIcon';
+import SimpleIcon from './SimpleIcon';
 
 interface FileItem {
   name: string;
@@ -15,15 +15,6 @@ interface FileTreeItemProps {
   onClick: (file: FileItem) => void;
 }
 
-const getFileIcon = (fileName: string) => {
-  const ext = fileName.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'md': return '📝';
-    case 'txt': return '📄';
-    case 'json': return '⚙️';
-    default: return '📄';
-  }
-};
 
 const FileTreeItem = ({ file, isSelected, onClick }: FileTreeItemProps) => {
   return (
@@ -31,8 +22,8 @@ const FileTreeItem = ({ file, isSelected, onClick }: FileTreeItemProps) => {
       className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:bg-gray-100 text-gray-700"
       onClick={() => onClick(file)}
     >
-      <EmojiIcon 
-        emoji={getFileIcon(file.name)} 
+      <SimpleIcon 
+        type="file" 
         size="xs"
         background="gray"
       />

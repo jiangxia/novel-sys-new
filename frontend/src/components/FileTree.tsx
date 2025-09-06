@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import EmojiIcon from './EmojiIcon';
+import SimpleIcon from './SimpleIcon';
 import { Button } from './ui';
 import FileTreeItem from './FileTreeItem';
 
@@ -81,7 +81,7 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
       {/* 项目标题栏 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2">
-          <EmojiIcon emoji="📁" size="sm" background="gray" />
+          <SimpleIcon type="folder" size="sm" background="gray" />
           <span className="text-sm font-medium text-gray-800">{project.projectName}</span>
         </div>
         {onRefresh && (
@@ -117,8 +117,8 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                     hasFiles && toggleDirectory(dirName);
                   }}
                 >
-                  <EmojiIcon 
-                    emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
+                  <SimpleIcon 
+                    type={hasFiles && isExpanded ? 'folder-open' : 'folder'} 
                     size="sm" 
                     background="gray"
                   />
@@ -176,8 +176,8 @@ const FileTree = ({ project, selectedFile, onFileClick, onRefresh }: FileTreePro
                   }`}
                   onClick={() => hasFiles && toggleDirectory(dirName)}
                 >
-                  <EmojiIcon 
-                    emoji={hasFiles ? (isExpanded ? '📂' : '📁') : '📁'} 
+                  <SimpleIcon 
+                    type={hasFiles && isExpanded ? 'folder-open' : 'folder'} 
                     size="sm" 
                     background="gray"
                   />
